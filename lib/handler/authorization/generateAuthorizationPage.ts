@@ -19,7 +19,6 @@ import { BuildAuthorizationPageModel } from '@vecrea/au3te-ts-common/handler.aut
 import { AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { Session } from '../../session/Session';
 import { SessionSchemas } from '../../session/types';
-import { sessionSchemas } from '../../session/sessionSchemas';
 import { ClearCurrentUserInfoInSessionIfNecessary } from './clearCurrentUserInfoInSessionIfNecessary';
 import { BuildResponse } from './buildResponse';
 import { ResponseToDecisionParams } from './responseToDecisionParams';
@@ -31,16 +30,19 @@ import { ResponseToDecisionParams } from './responseToDecisionParams';
  * @param {Session<SS>} session - The session object
  * @returns {Promise<Response>} A promise that resolves to a Response object
  */
-export type GenerateAuthorizationPage<SS extends SessionSchemas> = (
+export type GenerateAuthorizationPage<SS extends SessionSchemas, OPTS = unknown> = (
   response: AuthorizationResponse,
-  session: Session<SS>
+  session: Session<SS>,
+  options?: OPTS
 ) => Promise<Response>;
 
 /**
  * Parameters for creating a GenerateAuthorizationPage function
  * @template SS - The type of SessionSchemas
  */
-type CreateGenerateAuthorizationPageParams<SS extends SessionSchemas> = {
+export type CreateGenerateAuthorizationPageParams<
+  SS extends SessionSchemas
+> = {
   /** Function to convert response to decision parameters */
   responseToDecisionParams: ResponseToDecisionParams;
   /** Function to clear current user information from the session if necessary */
@@ -58,12 +60,12 @@ type CreateGenerateAuthorizationPageParams<SS extends SessionSchemas> = {
  * @returns {GenerateAuthorizationPage<SS>} A function that generates an authorization page
  */
 export const createGenerateAuthorizationPage =
-  <SS extends SessionSchemas = typeof sessionSchemas>({
+  <SS extends SessionSchemas, OPTS = unknown>({
     responseToDecisionParams,
     clearCurrentUserInfoInSessionIfNecessary,
     buildAuthorizationPageModel,
     buildResponse,
-  }: CreateGenerateAuthorizationPageParams<SS>): GenerateAuthorizationPage<SS> =>
+  }: CreateGenerateAuthorizationPageParams<SS>): GenerateAuthorizationPage<SS, OPTS> =>
   async (response, session) => {
     const authorizationDecisionParams = responseToDecisionParams(response);
     const { acrs, client } = response;

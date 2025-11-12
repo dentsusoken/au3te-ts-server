@@ -22,16 +22,20 @@ import { HandleNoInteraction } from './handleNoInteraction';
 import { CreateProcessApiResponseParams } from '../core/processApiResponse';
 import { Session } from '../../session/Session';
 import { SessionSchemas } from '../../session/types';
+import { ApiResponseWithOptions } from '../core';
 
 /**
  * Extended parameters for creating a process API response function for authorization.
  * @template SS - The type of SessionSchemas
  */
-type CreateProcessApiResponseParams4Authorization<SS extends SessionSchemas> = {
+export type CreateProcessApiResponseParams4Authorization<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = {
   /** The session object */
   session: Session<SS>;
   /** Function to generate the authorization page */
-  generateAuthorizationPage: GenerateAuthorizationPage<SS>;
+  generateAuthorizationPage: GenerateAuthorizationPage<SS, OPTS>;
   /** Function to handle no interaction cases */
   handleNoInteraction: HandleNoInteraction<SS>;
 } & CreateProcessApiResponseParams;
@@ -39,11 +43,12 @@ type CreateProcessApiResponseParams4Authorization<SS extends SessionSchemas> = {
 /**
  * Creates a function to process API responses for Authorization requests.
  * @template SS - The type of SessionSchemas
- * @param {CreateProcessApiResponseParams4Authorization<SS>} params - The parameters for creating the process function
- * @returns {ProcessApiResponse<AuthorizationResponse>} A function that processes Authorization API responses
+ * @template OPTS - The type of handler options
+ * @param {CreateProcessApiResponseParams4Authorization<SS, OPTS>} params - The parameters for creating the process function
+ * @returns {ProcessApiResponse<AuthorizationResponse, OPTS>} A function that processes Authorization API responses
  */
 export const createProcessApiResponse =
-  <SS extends SessionSchemas>({
+  <SS extends SessionSchemas, OPTS = unknown>({
     path,
     session,
     generateAuthorizationPage,
@@ -51,14 +56,20 @@ export const createProcessApiResponse =
     buildUnknownActionMessage,
     responseFactory,
     responseErrorFactory,
-  }: CreateProcessApiResponseParams4Authorization<SS>): ProcessApiResponse<AuthorizationResponse> =>
+  }: CreateProcessApiResponseParams4Authorization<SS, OPTS>): ProcessApiResponse<
+    ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+    OPTS
+  > =>
   /**
    * Processes the API response for Authorization requests.
    * @param {AuthorizationResponse} apiResponse - The response from the Authlete API for Authorization
    * @returns {Promise<Response>} A promise that resolves to the HTTP response
    */
-  async (apiResponse: AuthorizationResponse): Promise<Response> => {
-    const { action, responseContent } = apiResponse;
+  async (
+    apiResponse: ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+    _options?: OPTS
+  ): Promise<Response> => {
+    const { action, responseContent } = apiResponse.apiResponse;
 
     switch (action) {
       case 'INTERNAL_SERVER_ERROR':
@@ -72,9 +83,9 @@ export const createProcessApiResponse =
       case 'FORM':
         return responseFactory.form(responseContent);
       case 'INTERACTION':
-        return await generateAuthorizationPage(apiResponse, session);
+        return await generateAuthorizationPage(apiResponse.apiResponse, session);
       case 'NO_INTERACTION':
-        return await handleNoInteraction(apiResponse, session);
+        return await handleNoInteraction(apiResponse.apiResponse, session);
       default:
         throw responseErrorFactory.internalServerErrorResponseError(
           buildUnknownActionMessage(path, action)

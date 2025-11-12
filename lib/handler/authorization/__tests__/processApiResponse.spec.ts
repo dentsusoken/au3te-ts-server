@@ -6,6 +6,7 @@ import { createResponseErrorFactory } from '../../core/responseErrorFactory';
 import { ResponseError } from '../../core/ResponseError';
 import { Session } from '../../../session/Session';
 import { SessionSchemas } from '../../../session/types';
+import { ApiResponseWithOptions } from '../../core/types';
 
 // Mock dependencies
 const mockSession = {} as Session<SessionSchemas>;
@@ -35,9 +36,11 @@ describe('createProcessApiResponse', () => {
 
   // Test cases for each action
   it('should handle INTERNAL_SERVER_ERROR action', async () => {
-    const apiResponse: AuthorizationResponse = {
-      action: 'INTERNAL_SERVER_ERROR',
-      responseContent: 'Internal Server Error',
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: {
+        action: 'INTERNAL_SERVER_ERROR',
+        responseContent: 'Internal Server Error',
+      },
     };
 
     await expect(processApiResponse(apiResponse)).rejects.toThrow(
@@ -46,9 +49,11 @@ describe('createProcessApiResponse', () => {
   });
 
   it('should handle BAD_REQUEST action', async () => {
-    const apiResponse: AuthorizationResponse = {
-      action: 'BAD_REQUEST',
-      responseContent: 'Bad Request',
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: {
+        action: 'BAD_REQUEST',
+        responseContent: 'Bad Request',
+      },
     };
 
     await expect(processApiResponse(apiResponse)).rejects.toThrow(
@@ -57,9 +62,11 @@ describe('createProcessApiResponse', () => {
   });
 
   it('should handle LOCATION action', async () => {
-    const apiResponse: AuthorizationResponse = {
-      action: 'LOCATION',
-      responseContent: 'https://example.com',
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: {
+        action: 'LOCATION',
+        responseContent: 'https://example.com',
+      },
     };
     const spy = vi.spyOn(defaultResponseFactory, 'location');
 
@@ -70,9 +77,11 @@ describe('createProcessApiResponse', () => {
   });
 
   it('should handle FORM action', async () => {
-    const apiResponse: AuthorizationResponse = {
-      action: 'FORM',
-      responseContent: '<form>...</form>',
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: {
+        action: 'FORM',
+        responseContent: '<form>...</form>',
+      },
     };
     const spy = vi.spyOn(defaultResponseFactory, 'form');
 
@@ -83,38 +92,47 @@ describe('createProcessApiResponse', () => {
   });
 
   it('should handle INTERACTION action', async () => {
-    const apiResponse: AuthorizationResponse = {
+    const authorizationResponse: AuthorizationResponse = {
       action: 'INTERACTION',
       responseContent: undefined,
+    };
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: authorizationResponse,
     };
 
     await processApiResponse(apiResponse);
 
     expect(mockGenerateAuthorizationPage).toHaveBeenCalledWith(
-      apiResponse,
+      authorizationResponse,
       mockSession
     );
   });
 
   it('should handle NO_INTERACTION action', async () => {
-    const apiResponse: AuthorizationResponse = {
+    const authorizationResponse: AuthorizationResponse = {
       action: 'NO_INTERACTION',
       responseContent: undefined,
+    };
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: authorizationResponse,
     };
 
     await processApiResponse(apiResponse);
 
     expect(mockHandleNoInteraction).toHaveBeenCalledWith(
-      apiResponse,
+      authorizationResponse,
       mockSession
     );
   });
 
   it('should handle unknown action', async () => {
-    const apiResponse = {
+    const authorizationResponse = {
       action: 'UNKNOWN_ACTION',
       responseContent: undefined,
     } as unknown as AuthorizationResponse;
+    const apiResponse: ApiResponseWithOptions<AuthorizationResponse, undefined> = {
+      apiResponse: authorizationResponse,
+    };
     mockBuildUnknownActionMessage.mockReturnValue('Unknown action message');
 
     await expect(processApiResponse(apiResponse)).rejects.toThrow(

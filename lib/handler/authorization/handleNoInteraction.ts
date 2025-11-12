@@ -40,7 +40,7 @@ export type HandleNoInteraction<SS extends SessionSchemas> = (
 /**
  * Parameters for creating a HandleNoInteraction function
  */
-type CreateHandleNoInteractionParams = {
+export type CreateHandleNoInteractionParams = {
   checkAuthAge: CheckAuthAge;
   checkSubject: CheckSubject;
   calcSub: CalcSub;
@@ -82,20 +82,17 @@ export const createHandleNoInteraction = <SS extends SessionSchemas>({
       );
     }
 
-    const subject = response.subject;
-
-    if (checkSubject(subject ?? undefined, user.subject)) {
+    if (checkSubject(response.subject ?? undefined, user.subject)) {
       throw await buildAuthorizationFailError(
         response.ticket!,
         'DIFFERENT_SUBJECT'
       );
     }
 
-    const sub = await calcSub(subject ?? undefined, response.client);
-    const ticket = response.ticket!;
+    const sub = await calcSub(response.subject ?? undefined, response.client);
     const authorizationIssueRequest: AuthorizationIssueRequest = {
-      ticket,
-      subject,
+      ticket: response.ticket!,
+      subject: response.subject,
       authTime,
       sub,
     };

@@ -18,6 +18,7 @@
 import { AuthorizationRequest } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { ExtractParameters } from '../../extractor/extractParameters';
 import { ToApiRequest } from '../core/toApiRequest';
+import { ApiRequestWithOptions } from '../core/types';
 
 /**
  * Parameters required to create an authorization API request converter.
@@ -25,27 +26,27 @@ import { ToApiRequest } from '../core/toApiRequest';
  * @interface CreateToApiRequestParams
  * @property {ExtractParameters} extractParameters - Function to extract request parameters
  */
-type CreateToApiRequestParams = {
+export type CreateToApiRequestParams = {
   extractParameters: ExtractParameters;
 };
 
 /**
- * Creates a function that converts an HTTP request to an Authorization API request.
+ * Creates a function that converts an HTTP request to an Authorization API request with options.
  *
  * @function createToApiRequest
+ * @template OPTS - The type of the options object
  * @param {CreateToApiRequestParams} params - The parameter extraction function
- * @returns {ToApiRequest<AuthorizationRequest>} A function that converts Request to AuthorizationRequest
+ * @returns {ToApiRequest<ApiRequestWithOptions<AuthorizationRequest, OPTS>>} A function that converts Request to ApiRequestWithOptions
  */
-export const createToApiRequest =
-  ({
-    extractParameters,
-  }: CreateToApiRequestParams): ToApiRequest<AuthorizationRequest> =>
-  async (request: Request): Promise<AuthorizationRequest> => {
-    const parameters = await extractParameters(request);
-
-    const apiRequest: AuthorizationRequest = {
-      parameters,
+export const createToApiRequest = <OPTS = unknown>({
+  extractParameters,
+}: CreateToApiRequestParams): ToApiRequest<
+  ApiRequestWithOptions<AuthorizationRequest, OPTS>
+> =>
+  async (request: Request): Promise<ApiRequestWithOptions<AuthorizationRequest, OPTS>> => {
+    return {
+      apiRequest: {
+        parameters: await extractParameters(request),
+      },
     };
-
-    return apiRequest;
   };

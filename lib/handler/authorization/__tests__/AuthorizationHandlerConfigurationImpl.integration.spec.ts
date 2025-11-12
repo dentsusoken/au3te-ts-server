@@ -13,7 +13,10 @@ describe('AuthorizationHandlerConfiguration Integration Tests', () => {
   it('should successfully handle API request', async () => {
     const requestUri = await processParPostRequest();
     const request = createAuthorizationRequest(requestUri);
-    const response = await authorizationHandlerConfiguration.handle(request);
+    const response = await authorizationHandlerConfiguration.handle({
+      apiRequest: request,
+      options: undefined,
+    });
     const decisionParams = await session.get('authorizationDecisionParams');
 
     expect(response.status).toBe(200);

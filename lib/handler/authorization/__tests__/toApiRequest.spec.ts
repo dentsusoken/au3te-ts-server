@@ -18,7 +18,9 @@ describe('createToApiRequest', () => {
     const result = await toApiRequest(mockRequest);
 
     expect(result).toEqual({
-      parameters: 'response_type=code&client_id=client123',
+      apiRequest: {
+        parameters: 'response_type=code&client_id=client123',
+      },
     });
 
     expect(mockExtractParameters).toHaveBeenCalledWith(mockRequest);
