@@ -35,7 +35,7 @@ export const createProcessApiResponse =
   async (apiResponseWithOptions) => {
     const { apiResponse, options } = apiResponseWithOptions;
     const { action, responseContent } = apiResponse;
-    const { headers, accessToken } = options;
+    const { headers, accessToken } = options ?? {};
 
     switch (action) {
       case 'CALLER_ERROR':
