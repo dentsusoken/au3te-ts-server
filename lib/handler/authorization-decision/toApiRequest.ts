@@ -20,7 +20,6 @@ import { ExtractParameters } from '../../extractor/extractParameters';
 import { ToApiRequest } from '../core/toApiRequest';
 import { Session } from '../../session/Session';
 import { SessionSchemas } from '../../session/types';
-import { sessionSchemas } from '../../session/sessionSchemas';
 import { GetOrAuthenticateUser } from './getOrAuthenticateUser';
 import { parseQueryString } from '@vecrea/au3te-ts-common/utils';
 import { BuildAuthorizationFailError } from '../authorization-fail/buildAuthorizationFailError';
@@ -32,7 +31,7 @@ import { ResponseErrorFactory } from '../core/responseErrorFactory';
  * Parameters required to create an API request handler
  * @template SS - Session schema type extending SessionSchemas
  */
-type CreateToApiRequestParams<SS extends SessionSchemas> = {
+export type CreateToApiRequestParams<SS extends SessionSchemas> = {
   session: Session<SS>;
   extractParameters: ExtractParameters;
   getOrAuthenticateUser: GetOrAuthenticateUser;
@@ -48,7 +47,7 @@ type CreateToApiRequestParams<SS extends SessionSchemas> = {
  * @returns {ToApiRequest<AuthorizationIssueRequest>} Function that processes requests into AuthorizationIssueRequest
  */
 export const createToApiRequest =
-  ({
+  <SS extends SessionSchemas>({
     session,
     extractParameters,
     getOrAuthenticateUser,
@@ -56,9 +55,7 @@ export const createToApiRequest =
     calcSub,
     collectClaims,
     responseErrorFactory,
-  }: CreateToApiRequestParams<
-    typeof sessionSchemas
-  >): ToApiRequest<AuthorizationIssueRequest> =>
+  }: CreateToApiRequestParams<SS>): ToApiRequest<AuthorizationIssueRequest> =>
   async (request: Request): Promise<AuthorizationIssueRequest> => {
     const { authorizationDecisionParams, acrs, client } =
       await session.deleteBatch(

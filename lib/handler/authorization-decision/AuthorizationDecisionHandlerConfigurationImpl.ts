@@ -18,9 +18,11 @@
 import { AuthorizationIssueRequest } from '@vecrea/au3te-ts-common/schemas.authorization-issue';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { AuthorizationIssueHandlerConfiguration } from '../authorization-issue';
-import { sessionSchemas } from '../../session/sessionSchemas';
-import { createProcessRequest, ProcessRequest } from '../core/processRequest';
-import { AuthorizationDecisionHandlerConfiguration } from './AuthorizationDecisionHandlerConfiguration';
+import { createProcessRequest, ProcessRequest } from '../core';
+import {
+  AuthorizationDecisionHandlerConfiguration,
+  AuthorizationDecisionHandlerOverrideFactories,
+} from './AuthorizationDecisionHandlerConfiguration';
 import { createToApiRequest } from './toApiRequest';
 import { ToApiRequest } from '../core/toApiRequest';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
@@ -29,20 +31,41 @@ import {
   GetOrAuthenticateUser,
   createGetOrAuthenticateUser,
 } from './getOrAuthenticateUser';
-import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
+import {
+  UserHandlerConfiguration,
+  GetByCredentials,
+} from '@vecrea/au3te-ts-common/handler.user';
 import { AuthorizationHandlerConfiguration } from '../authorization/AuthorizationHandlerConfiguration';
 import { SessionSchemas } from '../../session/types';
 import { AuthorizationFailHandlerConfiguration } from '../authorization-fail';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
-type CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+export type CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams<
+  SS extends SessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'>,
+  OPTS = unknown
 > = {
-  serverHandlerConfiguration: ServerHandlerConfiguration<typeof sessionSchemas>;
+  serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
   extractorConfiguration: ExtractorConfiguration;
   userHandlerConfiguration: UserHandlerConfiguration;
-  authorizationHandlerConfiguration: AuthorizationHandlerConfiguration<SS>;
-  authorizationIssueHandlerConfiguration: AuthorizationIssueHandlerConfiguration;
+  authorizationHandlerConfiguration: AuthorizationHandlerConfiguration<
+    SS,
+    OPTS
+  >;
+  authorizationIssueHandlerConfiguration: AuthorizationIssueHandlerConfiguration<AuthorizationIssueRequest>;
   authorizationFailHandlerConfiguration: AuthorizationFailHandlerConfiguration;
+  overrides?: AuthorizationDecisionHandlerConfigurationImplOverrides<U, T>;
+};
+
+export type AuthorizationDecisionHandlerConfigurationImplOverrides<
+  U extends User = User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = AuthorizationDecisionHandlerOverrideFactories<U, T> & {
+  collectClaims?: CollectClaims;
+  toApiRequest?: ToApiRequest<AuthorizationIssueRequest>;
+  processRequest?: ProcessRequest;
+  getOrAuthenticateUser?: GetOrAuthenticateUser;
 };
 
 /** The path for the authorization decision endpoint */
@@ -55,7 +78,10 @@ export const AUTHORIZATION_DECISION_PATH = '/api/authorization/decision';
  * @implements {AuthorizationDecisionHandlerConfiguration}
  */
 export class AuthorizationDecisionHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
+  SS extends SessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'>,
+  OPTS = unknown
 > implements AuthorizationDecisionHandlerConfiguration
 {
   /** The path for the authorization decision endpoint */
@@ -85,30 +111,50 @@ export class AuthorizationDecisionHandlerConfigurationImpl<
     authorizationHandlerConfiguration,
     authorizationIssueHandlerConfiguration,
     authorizationFailHandlerConfiguration,
-  }: CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams<SS>) {
-    const { recoverResponseResult, responseErrorFactory } =
+    overrides,
+  }: CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams<
+    SS,
+    U,
+    T,
+    OPTS
+  >) {
+    const { recoverResponseResult, responseErrorFactory, session } =
       serverHandlerConfiguration;
 
-    this.getOrAuthenticateUser = createGetOrAuthenticateUser(
-      userHandlerConfiguration.getByCredentials
-    );
+    const resolvedOverrides =
+      overrides ??
+      ({} as AuthorizationDecisionHandlerConfigurationImplOverrides<U, T>);
 
-    this.toApiRequest = createToApiRequest({
-      session: serverHandlerConfiguration.session,
-      extractParameters: extractorConfiguration.extractParameters,
-      getOrAuthenticateUser: this.getOrAuthenticateUser,
-      buildAuthorizationFailError:
-        authorizationFailHandlerConfiguration.buildAuthorizationFailError,
-      calcSub: authorizationHandlerConfiguration.calcSub,
-      collectClaims: this.collectClaims,
-      responseErrorFactory,
-    });
+    this.collectClaims =
+      resolvedOverrides.collectClaims ?? defaultCollectClaims;
 
-    this.processRequest = createProcessRequest({
-      path: this.path,
-      toApiRequest: this.toApiRequest,
-      handle: authorizationIssueHandlerConfiguration.handle,
-      recoverResponseResult,
-    });
+    this.getOrAuthenticateUser =
+      resolvedOverrides.getOrAuthenticateUser ??
+      (
+        resolvedOverrides.createGetOrAuthenticateUser ??
+        createGetOrAuthenticateUser<U, T>
+      )(userHandlerConfiguration.getByCredentials as GetByCredentials<U, T>);
+
+    this.toApiRequest =
+      resolvedOverrides.toApiRequest ??
+      (resolvedOverrides.createToApiRequest ?? createToApiRequest)({
+        session,
+        extractParameters: extractorConfiguration.extractParameters,
+        getOrAuthenticateUser: this.getOrAuthenticateUser,
+        buildAuthorizationFailError:
+          authorizationFailHandlerConfiguration.buildAuthorizationFailError,
+        calcSub: authorizationHandlerConfiguration.calcSub,
+        collectClaims: this.collectClaims,
+        responseErrorFactory,
+      });
+
+    this.processRequest =
+      resolvedOverrides.processRequest ??
+      (resolvedOverrides.createProcessRequest ?? createProcessRequest)({
+        path: this.path,
+        toApiRequest: this.toApiRequest,
+        handle: authorizationIssueHandlerConfiguration.handle,
+        recoverResponseResult,
+      });
   }
 }
