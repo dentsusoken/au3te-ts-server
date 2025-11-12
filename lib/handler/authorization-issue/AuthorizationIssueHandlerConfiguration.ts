@@ -26,7 +26,9 @@ import { Handle } from '../core/handle';
 /**
  * Configuration interface for the Authorization Issue handler.
  */
-export interface AuthorizationIssueHandlerConfiguration {
+export interface AuthorizationIssueHandlerConfiguration<
+  ISSUE_REQ extends object = AuthorizationIssueRequest
+> {
   /**
    * The path for the authorization issue endpoint.
    */
@@ -48,5 +50,5 @@ export interface AuthorizationIssueHandlerConfiguration {
   /**
    * Function to handle the authorization issue request.
    */
-  handle: Handle<AuthorizationIssueRequest>;
+  handle: Handle<ISSUE_REQ>;
 }
