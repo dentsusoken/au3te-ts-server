@@ -20,9 +20,15 @@ import { ToApiRequest } from './toApiRequest';
 import { RecoverResponseResult } from './recoverResponseResult';
 import { HandleWithOptions } from './handleWithOptions';
 import { ApiRequestWithOptions } from './types';
-import { ProcessRequest } from './processRequest';
 
-type CreateProcessRequestWithOptionsParams<REQ extends object, OPTS> = {
+/**
+ * Represents a function that processes an HTTP request and returns a promise of a Response.
+ * @param {Request} request - The HTTP request to be processed.
+ * @returns {Promise<Response>} A promise that resolves to the HTTP response.
+ */
+export type ProcessRequestWithOptions<OPTS = unknown> = (request: Request, options?: OPTS) => Promise<Response>;
+
+export type CreateProcessRequestWithOptionsParams<REQ extends object, OPTS = unknown> = {
   path: string;
   toApiRequest: ToApiRequest<ApiRequestWithOptions<REQ, OPTS>>;
   handle: HandleWithOptions<REQ, OPTS>;
@@ -30,17 +36,20 @@ type CreateProcessRequestWithOptionsParams<REQ extends object, OPTS> = {
 };
 
 export const createProcessRequestWithOptions =
-  <REQ extends object, OPTS>({
+  <REQ extends object, OPTS = unknown>({
     path,
     toApiRequest,
     handle,
     recoverResponseResult,
-  }: CreateProcessRequestWithOptionsParams<REQ, OPTS>): ProcessRequest =>
-  async (request) => {
+  }: CreateProcessRequestWithOptionsParams<REQ, OPTS>): ProcessRequestWithOptions<OPTS> =>
+  async (request, options) => {
     const responseResult = await runAsyncCatching(async () => {
       const apiRequestWithOptions = await toApiRequest(request);
 
-      return handle(apiRequestWithOptions);
+      return handle({
+        ...apiRequestWithOptions,
+        options: options ?? apiRequestWithOptions.options,
+      });
     });
 
     return await recoverResponseResult(path, responseResult);

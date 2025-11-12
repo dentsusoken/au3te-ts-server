@@ -35,7 +35,7 @@ export type ProcessRequest = (request: Request) => Promise<Response>;
  * @property {Handle<REQ>} handle - Function to handle the API request.
  * @property {RecoverResponseResult} recoverResponseResult - Function to recover from response errors.
  */
-type CreateProcessRequestParams<REQ extends object> = {
+export type CreateProcessRequestParams<REQ extends object> = {
   path: string;
   toApiRequest: ToApiRequest<REQ>;
   handle: Handle<REQ>;

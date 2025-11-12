@@ -27,7 +27,7 @@ import { ApiRequestWithOptions, ApiResponseWithOptions } from './types';
  * @param {ApiRequestWithOptions<REQ, OPTS>} apiRequestWithOptions - The API request with options.
  * @returns {Promise<Response>} A promise that resolves to the API response.
  */
-export type HandleWithOptions<REQ extends object, OPTS> = (
+export type HandleWithOptions<REQ extends object, OPTS = unknown> = (
   apiRequestWithOptions: ApiRequestWithOptions<REQ, OPTS>
 ) => Promise<Response>;
 
@@ -37,7 +37,7 @@ export type HandleWithOptions<REQ extends object, OPTS> = (
  * @template RES - The type of the API response object.
  * @template OPTS - The type of the options object.
  */
-export type CreateHandleWithOptionsParams<REQ extends object, RES, OPTS> = {
+export type CreateHandleWithOptionsParams<REQ extends object, RES, OPTS = unknown> = {
   /** The API endpoint path */
   path: string;
 
@@ -45,7 +45,7 @@ export type CreateHandleWithOptionsParams<REQ extends object, RES, OPTS> = {
   processApiRequest: ProcessApiRequest<REQ, RES>;
 
   /** Function to process the API response */
-  processApiResponse: ProcessApiResponse<ApiResponseWithOptions<RES, OPTS>>;
+  processApiResponse: ProcessApiResponse<ApiResponseWithOptions<RES, OPTS>, OPTS>;
 
   /** Function to recover from response errors */
   recoverResponseResult: RecoverResponseResult;
@@ -60,7 +60,7 @@ export type CreateHandleWithOptionsParams<REQ extends object, RES, OPTS> = {
  * @returns {HandleWithOptions<REQ, OPTS>} A function that handles API requests with options.
  */
 export const createHandleWithOptions =
-  <REQ extends object, RES, OPTS>({
+  <REQ extends object, RES, OPTS = unknown>({
     path,
     processApiRequest,
     processApiResponse,
