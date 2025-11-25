@@ -7,12 +7,19 @@ import type { AuthorizationIssueHandlerConfiguration } from '../../authorization
 import type { AuthorizationFailHandlerConfiguration } from '../../authorization-fail/AuthorizationFailHandlerConfiguration';
 import type { AuthorizationPageHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.authorization-page';
 import type { ExtractorConfiguration } from '../../../extractor/ExtractorConfiguration';
-import type { AuthorizationRequest, AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
+import type {
+  AuthorizationRequest,
+  AuthorizationResponse,
+} from '@vecrea/au3te-ts-common/schemas.authorization';
 import type { ProcessApiResponse } from '../../core/processApiResponse';
 import type { ProcessApiRequest } from '../../core/processApiRequest';
-import type { HandleWithOptions, CreateHandleWithOptionsParams } from '../../core/handleWithOptions';
+import type {
+  HandleWithOptions,
+  CreateHandleWithOptionsParams,
+} from '../../core/handleWithOptions';
 import type { CreateProcessApiResponseParams4Authorization } from '../processApiResponse';
 import type { ApiResponseWithOptions } from '../../core/types';
+import { FederationManager } from '@/federation/FederationManager';
 
 type TestHandleOptions = {
   traceId: string;
@@ -35,22 +42,23 @@ const createDependencies = () => {
       clear: vi.fn(),
     },
     responseFactory: {
-      location: vi.fn((location: string) =>
-        new Response(null, { status: 302, headers: { Location: location } })
+      location: vi.fn(
+        (location: string) =>
+          new Response(null, { status: 302, headers: { Location: location } })
       ),
       form: vi.fn(() => new Response(null, { status: 200 })),
       internalServerError: vi.fn(() => new Response(null, { status: 500 })),
       badRequest: vi.fn(() => new Response(null, { status: 400 })),
     },
     responseErrorFactory: {
-      internalServerErrorResponseError: vi.fn((message: string) =>
-        new Error(message)
+      internalServerErrorResponseError: vi.fn(
+        (message: string) => new Error(message)
       ),
       badRequestResponseError: vi.fn((message: string) => new Error(message)),
     },
     recoverResponseResult: vi.fn(),
-    buildUnknownActionMessage: vi.fn((path: string, action: string) =>
-      `${path}:${action}`
+    buildUnknownActionMessage: vi.fn(
+      (path: string, action: string) => `${path}:${action}`
     ),
     prepareHeaders: vi.fn(),
   } as unknown as ServerHandlerConfiguration<SessionSchemas>;
@@ -71,12 +79,17 @@ const createDependencies = () => {
     extractParameters: vi.fn(async () => new URLSearchParams()),
   } as unknown as ExtractorConfiguration;
 
+  const federationManager = {
+    getConfigurations: vi.fn(),
+  } as unknown as FederationManager;
+
   return {
     serverHandlerConfiguration,
     authorizationIssueHandlerConfiguration,
     authorizationFailHandlerConfiguration,
     authorizationPageHandlerConfiguration,
     extractorConfiguration,
+    federationManager,
   };
 };
 
@@ -150,16 +163,16 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
         expect(typeof processApiRequest).toBe('function');
         expect(typeof processApiResponse).toBe('function');
 
-        const handle: HandleWithOptions<AuthorizationRequest, TestHandleOptions> = async ({
-          apiRequest: _apiRequest,
-          options,
-        }) => {
+        const handle: HandleWithOptions<
+          AuthorizationRequest,
+          TestHandleOptions
+        > = async ({ apiRequest: _apiRequest, options }) => {
           receivedOptions.push(options ?? { traceId: '' });
           return new Response(null, { status: 204 });
         };
 
         return handle;
-      },
+      }
     );
 
     const config = createConfig({ createHandle: createHandleOverride });
@@ -186,11 +199,13 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
       return {} as AuthorizationResponse;
     });
 
-    const config = createConfig({ processApiRequest: failingProcessApiRequest });
+    const config = createConfig({
+      processApiRequest: failingProcessApiRequest,
+    });
 
     // When calling the overridden processApiRequest with an invalid request
     await expect(
-      config.processApiRequest(null as unknown as AuthorizationRequest),
+      config.processApiRequest(null as unknown as AuthorizationRequest)
     ).rejects.toBe(rejection);
 
     // Then the override should have been invoked exactly once
@@ -202,11 +217,17 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
     const rejection = new RangeError('unsupported action');
     const createProcessApiResponseOverride = vi.fn(
       (
-        _params: CreateProcessApiResponseParams4Authorization<SessionSchemas, TestHandleOptions>,
-      ): ProcessApiResponse<ApiResponseWithOptions<AuthorizationResponse, TestHandleOptions>, TestHandleOptions> =>
+        _params: CreateProcessApiResponseParams4Authorization<
+          SessionSchemas,
+          TestHandleOptions
+        >
+      ): ProcessApiResponse<
+        ApiResponseWithOptions<AuthorizationResponse, TestHandleOptions>,
+        TestHandleOptions
+      > =>
         vi.fn(async () => {
           throw rejection;
-        }),
+        })
     );
 
     const config = createConfig({
@@ -230,7 +251,7 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
     const createProcessRequestOverride = vi.fn(() =>
       vi.fn(async () => {
         throw processRequestError;
-      }),
+      })
     );
 
     const config = createConfig({
@@ -239,7 +260,7 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
 
     // When invoking processRequest produced by the override
     await expect(
-      config.processRequest(new Request('https://example.com/authorize')),
+      config.processRequest(new Request('https://example.com/authorize'))
     ).rejects.toBe(processRequestError);
 
     // Then the override should be called once to supply the failing handler
