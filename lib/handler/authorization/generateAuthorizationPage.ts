@@ -30,7 +30,10 @@ import { ResponseToDecisionParams } from './responseToDecisionParams';
  * @param {Session<SS>} session - The session object
  * @returns {Promise<Response>} A promise that resolves to a Response object
  */
-export type GenerateAuthorizationPage<SS extends SessionSchemas, OPTS = unknown> = (
+export type GenerateAuthorizationPage<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = (
   response: AuthorizationResponse,
   session: Session<SS>,
   options?: OPTS
@@ -40,9 +43,7 @@ export type GenerateAuthorizationPage<SS extends SessionSchemas, OPTS = unknown>
  * Parameters for creating a GenerateAuthorizationPage function
  * @template SS - The type of SessionSchemas
  */
-export type CreateGenerateAuthorizationPageParams<
-  SS extends SessionSchemas
-> = {
+export type CreateGenerateAuthorizationPageParams<SS extends SessionSchemas> = {
   /** Function to convert response to decision parameters */
   responseToDecisionParams: ResponseToDecisionParams;
   /** Function to clear current user information from the session if necessary */
@@ -65,7 +66,10 @@ export const createGenerateAuthorizationPage =
     clearCurrentUserInfoInSessionIfNecessary,
     buildAuthorizationPageModel,
     buildResponse,
-  }: CreateGenerateAuthorizationPageParams<SS>): GenerateAuthorizationPage<SS, OPTS> =>
+  }: CreateGenerateAuthorizationPageParams<SS>): GenerateAuthorizationPage<
+    SS,
+    OPTS
+  > =>
   async (response, session) => {
     const authorizationDecisionParams = responseToDecisionParams(response);
     const { acrs, client } = response;
@@ -77,7 +81,10 @@ export const createGenerateAuthorizationPage =
     });
     await clearCurrentUserInfoInSessionIfNecessary(response, session);
     const user = await session.get('user');
+
     const model = buildAuthorizationPageModel(response, user);
+
+    await session.set('authorizationPageModel', model);
 
     return buildResponse(model);
   };
