@@ -1,0 +1,313 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { FederationCallbackHandlerConfigurationImpl } from '../FederationCallbackHandlerConfigurationImpl';
+import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
+import { SessionSchemas } from '../../../session/types';
+import { FederationManager } from '@/federation/FederationManager';
+import { ExtractorConfiguration } from '@/extractor/ExtractorConfiguration';
+import { FEDERATION_CALLBACK_PATH } from '../FederationCallbackHandlerConfigurationImpl';
+
+describe('FederationCallbackHandlerConfigurationImpl', () => {
+  const createMockDependencies = () => {
+    const mockSession = {
+      get: vi.fn(),
+      getBatch: vi.fn(),
+      set: vi.fn(),
+      setBatch: vi.fn(),
+      delete: vi.fn(),
+      deleteBatch: vi.fn(),
+      clear: vi.fn(),
+    };
+
+    const mockServerHandlerConfiguration = {
+      responseErrorFactory: {
+        notFoundResponseError: vi.fn((message: string) => ({
+          response: new Response(message, { status: 404 }),
+        })),
+        badRequestResponseError: vi.fn((message: string) => ({
+          response: new Response(message, { status: 400 }),
+        })),
+        internalServerErrorResponseError: vi.fn((message: string) => ({
+          response: new Response(message, { status: 500 }),
+        })),
+      },
+      session: mockSession,
+    } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+
+    const mockExtractorConfiguration = {
+      extractPathParameter: vi.fn((request: Request, pattern: string) => {
+        const url = new URL(request.url);
+        const pathParts = url.pathname.split('/');
+        const patternParts = pattern.split('/');
+        const params: Record<string, string> = {};
+
+        for (let i = 0; i < patternParts.length; i++) {
+          if (patternParts[i].startsWith(':')) {
+            params[patternParts[i].slice(1)] = pathParts[i];
+          }
+        }
+        return params;
+      }),
+    } as unknown as ExtractorConfiguration;
+
+    const mockUserInfo = {
+      sub: 'user123',
+      name: 'Test User',
+      email: 'test@example.com',
+    };
+
+    const mockFederation = {
+      processFederationResponse: vi.fn().mockResolvedValue(mockUserInfo),
+    };
+
+    const mockFederationManager = {
+      getFederation: vi.fn((id: string) => {
+        if (id === 'test-federation') {
+          return mockFederation;
+        }
+        throw new Error(`Federation with ID '${id}' not found`);
+      }),
+    } as unknown as FederationManager;
+
+    return {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockFederation,
+      mockSession,
+      mockUserInfo,
+    };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should initialize with correct path', () => {
+    const { mockServerHandlerConfiguration, mockExtractorConfiguration, mockFederationManager } =
+      createMockDependencies();
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    expect(config.path).toBe(FEDERATION_CALLBACK_PATH);
+    expect(config.processRequest).toBeDefined();
+  });
+
+  it('should process request and return authorization page', async () => {
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockFederation,
+      mockSession,
+      mockUserInfo,
+    } = createMockDependencies();
+
+    mockSession.get.mockImplementation((key: string) => {
+      if (key === 'federationParams') {
+        return Promise.resolve({
+          state: 'test-state',
+          codeVerifier: 'test-verifier',
+        });
+      }
+      if (key === 'authorizationPageModel') {
+        return Promise.resolve({
+          user: null,
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/test-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(mockExtractorConfiguration.extractPathParameter).toHaveBeenCalledWith(
+      request,
+      FEDERATION_CALLBACK_PATH
+    );
+    expect(mockFederationManager.getFederation).toHaveBeenCalledWith('test-federation');
+    expect(mockFederation.processFederationResponse).toHaveBeenCalledWith(
+      expect.any(URL),
+      'test-state',
+      'test-verifier'
+    );
+    expect(mockSession.setBatch).toHaveBeenCalledWith({
+      user: expect.objectContaining({
+        ...mockUserInfo,
+        subject: `${mockUserInfo.sub}@test-federation`,
+      }),
+      authTime: expect.any(Number),
+    });
+    expect(response.status).toBe(200);
+  });
+
+  it('should return 404 for unknown federation ID', async () => {
+    const { mockServerHandlerConfiguration, mockExtractorConfiguration, mockFederationManager } =
+      createMockDependencies();
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/unknown-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(response.status).toBe(404);
+  });
+
+  it('should return 400 when federation parameters not found', async () => {
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockSession,
+    } = createMockDependencies();
+
+    mockSession.get.mockResolvedValue(null);
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/test-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 400 when authorization page model not found', async () => {
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockSession,
+    } = createMockDependencies();
+
+    mockSession.get.mockImplementation((key: string) => {
+      if (key === 'federationParams') {
+        return Promise.resolve({
+          state: 'test-state',
+          codeVerifier: 'test-verifier',
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/test-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should return 400 when state not found in federation params', async () => {
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockSession,
+    } = createMockDependencies();
+
+    mockSession.get.mockImplementation((key: string) => {
+      if (key === 'federationParams') {
+        return Promise.resolve({
+          codeVerifier: 'test-verifier',
+        });
+      }
+      if (key === 'authorizationPageModel') {
+        return Promise.resolve({
+          user: null,
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/test-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(response.status).toBe(400);
+  });
+
+  it('should handle federation response processing error', async () => {
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+      mockFederation,
+      mockSession,
+    } = createMockDependencies();
+
+    mockSession.get.mockImplementation((key: string) => {
+      if (key === 'federationParams') {
+        return Promise.resolve({
+          state: 'test-state',
+          codeVerifier: 'test-verifier',
+        });
+      }
+      if (key === 'authorizationPageModel') {
+        return Promise.resolve({
+          user: null,
+        });
+      }
+      return Promise.resolve(null);
+    });
+
+    mockFederation.processFederationResponse.mockRejectedValue(
+      new Error('Failed to process federation response')
+    );
+
+    const config = new FederationCallbackHandlerConfigurationImpl({
+      serverHandlerConfiguration: mockServerHandlerConfiguration,
+      extractorConfiguration: mockExtractorConfiguration,
+      federationManager: mockFederationManager,
+    });
+
+    const request = new Request(
+      'https://example.com/api/federation/callback/test-federation?code=auth-code&state=test-state'
+    );
+
+    const response = await config.processRequest(request);
+
+    expect(response.status).toBe(400);
+  });
+});
+

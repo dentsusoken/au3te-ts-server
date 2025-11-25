@@ -10,6 +10,7 @@ vi.mock('@vecrea/au3te-ts-common/handler.authorization-page');
 describe('createGenerateAuthorizationPage', () => {
   const mockSession = {
     setBatch: vi.fn(),
+    set: vi.fn(),
     get: vi.fn(),
   } as unknown as Session<typeof sessionSchemas>;
   const mockResponseToDecisionParams = vi.fn();
@@ -67,6 +68,7 @@ describe('createGenerateAuthorizationPage', () => {
       mockResponse,
       mockUser
     );
+    expect(mockSession.set).toHaveBeenCalledWith('authorizationPageModel', mockModel);
     expect(mockBuildResponse).toHaveBeenCalledWith(mockModel);
     expect(result).toBe(mockResponseObject);
   });
