@@ -17,11 +17,9 @@
 import { ServerHandlerConfiguration } from '../core';
 import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
-import { simpleBuildResponse } from '../authorization';
-import { User } from '@vecrea/au3te-ts-common/schemas.common';
 import { FederationCallbackHandlerConfiguration } from './FederationCallbackHandlerConfiguration';
 import { SessionSchemas } from '@/session/types';
-
+import { createProcessRequest } from './processRequest';
 
 export type FederationCallbackHandlerConfigurationImplConstructorParams<
   SS extends SessionSchemas
@@ -60,73 +58,12 @@ export class FederationCallbackHandlerConfigurationImpl<
     const { responseErrorFactory, session } = serverHandlerConfiguration;
     const { extractPathParameter } = extractorConfiguration;
 
-    this.processRequest = async (request: Request) => {
-      try {
-        const { federationId } = extractPathParameter(request, this.path);
-        
-        let federation: ReturnType<typeof federationManager.getFederation>;
-        try {
-          federation = federationManager.getFederation(federationId);
-        } catch (error) {
-          return responseErrorFactory.notFoundResponseError(
-            `Federation with ID '${federationId}' not found`
-          ).response;
-        }
-
-        const federationParams = await session.get('federationParams');
-        if (!federationParams) {
-          return responseErrorFactory.badRequestResponseError(
-            'Federation parameters not found'
-          ).response;
-        }
-
-        const model = await session.get('authorizationPageModel');
-        if (!model) {
-          return responseErrorFactory.badRequestResponseError(
-            'Authorization page model not found'
-          ).response;
-        }
-
-        const { state, codeVerifier } = federationParams;
-
-        if (!state) {
-          return responseErrorFactory.badRequestResponseError('State not found')
-            .response;
-        }
-
-        let userinfo;
-        try {
-          userinfo = await federation.processFederationResponse(
-            new URL(request.url),
-            state,
-            codeVerifier
-          );
-        } catch (error) {
-          return responseErrorFactory.badRequestResponseError(
-            `Failed to process federation response: ${error instanceof Error ? error.message : 'Unknown error'}`
-          ).response;
-        }
-
-        const user: User = {
-          ...userinfo,
-          subject: `${userinfo.sub}@${federationId}`,
-        };
-
-        const authTime = Math.floor(Date.now() / 1000);
-
-        await session.setBatch({
-          user,
-          authTime,
-        });
-
-        model.user = user;
-
-        return simpleBuildResponse(model);
-      } catch (error) {
-        return responseErrorFactory.internalServerErrorResponseError(
-          `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`
-        ).response;
-      }
-    };
+    this.processRequest = createProcessRequest<SS>({
+      path: this.path,
+      extractPathParameter,
+      federationManager,
+      responseErrorFactory,
+      session,
+    });
   }
 }

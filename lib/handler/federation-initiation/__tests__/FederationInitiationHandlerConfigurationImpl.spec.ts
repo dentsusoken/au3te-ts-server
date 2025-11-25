@@ -118,7 +118,7 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
     );
     expect(mockFederationManager.getFederation).toHaveBeenCalledWith('test-federation');
     expect(mockFederation.createFederationRequest).toHaveBeenCalled();
-    expect(mockSession.set).toHaveBeenCalledWith('federationParams', expect.objectContaining({
+    expect(mockSession.set).toHaveBeenCalledWith('federationCallbackParams', expect.objectContaining({
       state: expect.any(String),
       codeVerifier: expect.any(String),
     }));
@@ -162,14 +162,14 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
     await config.processRequest(request);
 
     const setCall = mockSession.set.mock.calls.find(
-      (call) => call[0] === 'federationParams'
+      (call) => call[0] === 'federationCallbackParams'
     );
     expect(setCall).toBeDefined();
-    const federationParams = setCall[1];
-    expect(federationParams.state).toBeDefined();
-    expect(federationParams.codeVerifier).toBeDefined();
-    expect(typeof federationParams.state).toBe('string');
-    expect(typeof federationParams.codeVerifier).toBe('string');
+    const federationCallbackParams = setCall[1];
+    expect(federationCallbackParams.state).toBeDefined();
+    expect(federationCallbackParams.codeVerifier).toBeDefined();
+    expect(typeof federationCallbackParams.state).toBe('string');
+    expect(typeof federationCallbackParams.codeVerifier).toBe('string');
   });
 });
 

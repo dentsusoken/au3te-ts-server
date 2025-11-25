@@ -19,8 +19,9 @@ import { SessionSchemas } from '../../session/types';
 import { ServerHandlerConfiguration } from '../core';
 import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
-import { generateRandomState, generateRandomCodeVerifier } from 'oauth4webapi';
 import { FederationInitiationHandlerConfiguration } from './FederationInitiationHandlerConfiguration';
+import { createProcessRequest } from './processRequest';
+
 export type FederationInitiationHandlerConfigurationImplConstructorParams<
   SS extends SessionSchemas
 > = {
@@ -31,7 +32,8 @@ export type FederationInitiationHandlerConfigurationImplConstructorParams<
   federationManager: FederationManager;
 };
 
-export const FEDERATION_INITIATION_PATH = '/api/federation/initiation/:federationId';
+export const FEDERATION_INITIATION_PATH =
+  '/api/federation/initiation/:federationId';
 
 /**
  * Implementation of FederationInitiationHandlerConfiguration.
@@ -40,7 +42,8 @@ export const FEDERATION_INITIATION_PATH = '/api/federation/initiation/:federatio
  */
 export class FederationInitiationHandlerConfigurationImpl<
   SS extends SessionSchemas
-> implements FederationInitiationHandlerConfiguration {
+> implements FederationInitiationHandlerConfiguration
+{
   /**
    * The path for the federation initiation endpoint.
    */
@@ -58,33 +61,13 @@ export class FederationInitiationHandlerConfigurationImpl<
 
     const { extractPathParameter } = extractorConfiguration;
 
-    this.processRequest = async (request: Request) => {
-      const { federationId } = extractPathParameter(request, this.path);
-      
-      let federation;
-      try {
-        federation = federationManager.getFederation(federationId);
-      } catch (error) {
-        return responseErrorFactory.notFoundResponseError(
-          `Federation with ID '${federationId}' not found`
-        ).response;
-      }
-
-      const state = generateRandomState();
-      const codeVerifier = generateRandomCodeVerifier();
-
-      await session.set('federationParams', {
-        state: state,
-        codeVerifier: codeVerifier,
-      });
-
-      const authenticationRequest = await federation.createFederationRequest(
-        state,
-        codeVerifier
-      );
-
-
-      return responseFactory.location(authenticationRequest.toString());
-    };
+    this.processRequest = createProcessRequest<SS>({
+      path: this.path,
+      extractPathParameter,
+      federationManager,
+      responseErrorFactory,
+      session,
+      responseFactory,
+    });
   }
 }

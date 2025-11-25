@@ -107,7 +107,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
-      if (key === 'federationParams') {
+      if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
           codeVerifier: 'test-verifier',
@@ -206,7 +206,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
-      if (key === 'federationParams') {
+      if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
           codeVerifier: 'test-verifier',
@@ -239,7 +239,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
-      if (key === 'federationParams') {
+      if (key === 'federationCallbackParams') {
         return Promise.resolve({
           codeVerifier: 'test-verifier',
         });
@@ -277,7 +277,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
-      if (key === 'federationParams') {
+      if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
           codeVerifier: 'test-verifier',
