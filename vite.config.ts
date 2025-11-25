@@ -13,6 +13,7 @@ export default defineConfig({
     lib: {
       entry: {
         api: './lib/api/index.ts',
+        federation: './lib/federation/index.ts',
         'handler/core': './lib/handler/core/index.ts',
         'handler/par': './lib/handler/par/index.ts',
         'handler/authorization': './lib/handler/authorization/index.ts',
@@ -39,6 +40,10 @@ export default defineConfig({
         'handler/credential-issuer-jwks':
           './lib/handler/credential-issuer-jwks/index.ts',
         'handler/service-jwks': './lib/handler/service-jwks/index.ts',
+        'handler/federation-initiation':
+          './lib/handler/federation-initiation/index.ts',
+        'handler/federation-callback':
+          './lib/handler/federation-callback/index.ts',
         extractor: './lib/extractor/index.ts',
         session: './lib/session/index.ts',
       },
