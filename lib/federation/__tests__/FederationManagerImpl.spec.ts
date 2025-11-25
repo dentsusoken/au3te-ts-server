@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { FederationManagerImpl } from '../FederationManagerImpl';
-import { FederationsConfig, FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
+import {
+  FederationRegistry,
+  FederationConfig,
+} from '@vecrea/au3te-ts-common/schemas.federation';
 
 // Mock FederationImpl to avoid actual initialization
 vi.mock('../FederationImpl', () => ({
@@ -26,28 +29,27 @@ describe('FederationManagerImpl', () => {
 
   describe('constructor', () => {
     it('should initialize with valid configurations', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [createMockFederationConfig('fed1')],
       };
+      const manager = new FederationManagerImpl({ registry });
 
-      const manager = new FederationManagerImpl({ configs });
-
-      expect(manager.getConfigurations()).toEqual(configs);
+      expect(manager.getConfigurations()).toEqual(registry);
     });
 
     it('should handle null configurations', () => {
-      const configs: FederationsConfig = null;
+      const registry: FederationRegistry = null;
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.getConfigurations()).toBeNull();
       expect(manager.buildFederations().size).toBe(0);
     });
 
     it('should handle undefined configurations', () => {
-      const configs: FederationsConfig = undefined;
+      const registry: FederationRegistry = undefined;
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.getConfigurations()).toBeUndefined();
       expect(manager.buildFederations().size).toBe(0);
@@ -56,39 +58,39 @@ describe('FederationManagerImpl', () => {
 
   describe('isConfigurationValid', () => {
     it('should return true for valid configuration at valid index', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [
           createMockFederationConfig('fed1'),
           createMockFederationConfig('fed2'),
         ],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.isConfigurationValid(0)).toBe(true);
       expect(manager.isConfigurationValid(1)).toBe(true);
     });
 
     it('should return false for invalid index', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [createMockFederationConfig('fed1')],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.isConfigurationValid(-1)).toBe(false);
       expect(manager.isConfigurationValid(1)).toBe(false);
     });
 
     it('should return false for null configurations', () => {
-      const configs: FederationsConfig = null;
-      const manager = new FederationManagerImpl({ configs });
+      const registry: FederationRegistry = null;
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.isConfigurationValid(0)).toBe(false);
     });
 
     it('should return false for invalid configuration', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [
           {
             id: '',
@@ -105,7 +107,7 @@ describe('FederationManagerImpl', () => {
         ],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(manager.isConfigurationValid(0)).toBe(false);
     });
@@ -113,14 +115,14 @@ describe('FederationManagerImpl', () => {
 
   describe('buildFederations', () => {
     it('should build federations map from valid configurations', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [
           createMockFederationConfig('fed1'),
           createMockFederationConfig('fed2'),
         ],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
       const federations = manager.buildFederations();
 
       expect(federations.size).toBe(2);
@@ -129,7 +131,7 @@ describe('FederationManagerImpl', () => {
     });
 
     it('should skip invalid configurations', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [
           createMockFederationConfig('fed1'),
           {
@@ -147,7 +149,7 @@ describe('FederationManagerImpl', () => {
         ],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
       const federations = manager.buildFederations();
 
       expect(federations.size).toBe(1);
@@ -155,8 +157,8 @@ describe('FederationManagerImpl', () => {
     });
 
     it('should return empty map for null configurations', () => {
-      const configs: FederationsConfig = null;
-      const manager = new FederationManagerImpl({ configs });
+      const registry: FederationRegistry = null;
+      const manager = new FederationManagerImpl({ registry });
       const federations = manager.buildFederations();
 
       expect(federations.size).toBe(0);
@@ -165,25 +167,25 @@ describe('FederationManagerImpl', () => {
 
   describe('getFederation', () => {
     it('should return federation by id', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [
           createMockFederationConfig('fed1'),
           createMockFederationConfig('fed2'),
         ],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
       const federation = manager.getFederation('fed1');
 
       expect(federation).toBeDefined();
     });
 
     it('should throw error for non-existent federation', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [createMockFederationConfig('fed1')],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
       expect(() => manager.getFederation('non-existent')).toThrow(
         "Federation with ID 'non-existent' not found"
@@ -193,14 +195,13 @@ describe('FederationManagerImpl', () => {
 
   describe('getConfigurations', () => {
     it('should return configurations', () => {
-      const configs: FederationsConfig = {
+      const registry: FederationRegistry = {
         federations: [createMockFederationConfig('fed1')],
       };
 
-      const manager = new FederationManagerImpl({ configs });
+      const manager = new FederationManagerImpl({ registry });
 
-      expect(manager.getConfigurations()).toEqual(configs);
+      expect(manager.getConfigurations()).toEqual(registry);
     });
   });
 });
-

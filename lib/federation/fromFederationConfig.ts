@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import {
-  ClientConfig,
+  FederationClientConfig,
   FederationConfig,
-  ServerConfig,
+  FederationServerConfig,
 } from '@vecrea/au3te-ts-common/schemas.federation';
 
 /**
@@ -28,8 +28,8 @@ import {
  */
 export type KeyOfFederationConfig =
   | ['id']
-  | ['client', keyof ClientConfig]
-  | ['server', keyof ServerConfig];
+  | ['client', keyof FederationClientConfig]
+  | ['server', keyof FederationServerConfig];
 
 /**
  * Extracts a value from federation configuration using a type-safe path.

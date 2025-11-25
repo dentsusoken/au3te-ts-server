@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-import { FederationsConfig, FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
+import { FederationRegistry, FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
 import { FederationManager } from './FederationManager';
 import { Federation } from './Federation';
 import { FederationImpl } from './FederationImpl';
@@ -24,7 +24,7 @@ import { FederationImpl } from './FederationImpl';
  */
 export type FederationManagerImplConstructorParams = {
   /** Federations configuration containing an array of federation configurations. */
-  configs: FederationsConfig;
+  registry: FederationRegistry;
   /** Whether running in development mode. Defaults to false. */
   isDev?: boolean;
 };
@@ -34,12 +34,12 @@ export type FederationManagerImplConstructorParams = {
  * Manages multiple federation configurations and provides access to Federation instances.
  */
 export class FederationManagerImpl implements FederationManager {
-  #configs: FederationsConfig;
+  #registry: FederationRegistry;
   #federations: Map<string, Federation>;
-  #isDev: boolean;
+  #isDev: boolean;  
 
-  constructor({ configs, isDev = false }: FederationManagerImplConstructorParams) {
-    this.#configs = configs;
+  constructor({ registry, isDev = false }: FederationManagerImplConstructorParams) {
+    this.#registry = registry;
     this.#isDev = isDev;
     this.#federations = this.buildFederations();
   }
@@ -50,13 +50,13 @@ export class FederationManagerImpl implements FederationManager {
    * @returns true if the configuration is valid, false otherwise
    */
   isConfigurationValid(index: number): boolean {
-    if (!this.#configs || !this.#configs.federations) {
+    if (!this.#registry || !this.#registry.federations) {
       return false;
     }
-    if (index < 0 || index >= this.#configs.federations.length) {
+    if (index < 0 || index >= this.#registry.federations.length) {
       return false;
     }
-    const config = this.#configs.federations[index];
+    const config = this.#registry.federations[index];
     return this.isFederationConfigValid(config);
   }
 
@@ -67,11 +67,11 @@ export class FederationManagerImpl implements FederationManager {
   buildFederations(): Map<string, Federation> {
     const federations = new Map<string, Federation>();
     
-    if (!this.#configs || !this.#configs.federations) {
+    if (!this.#registry || !this.#registry.federations) {
       return federations;
     }
     
-    for (const config of this.#configs.federations) {
+    for (const config of this.#registry.federations) {
       if (this.isFederationConfigValid(config)) {
         const federation = new FederationImpl(config, this.#isDev);
         federations.set(config.id, federation);
@@ -83,10 +83,10 @@ export class FederationManagerImpl implements FederationManager {
 
   /**
    * Gets the federations configurations.
-   * @returns The federations configurations
+   * @returns The federations registry
    */
-  getConfigurations(): FederationsConfig {
-    return this.#configs;
+  getConfigurations(): FederationRegistry {
+    return this.#registry;
   }
 
   /**

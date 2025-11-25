@@ -14,7 +14,7 @@
  * language governing permissions and limitations under the
  * License.
  */
-import { FederationsConfig } from '@vecrea/au3te-ts-common/schemas.federation';
+import { FederationRegistry } from '@vecrea/au3te-ts-common/schemas.federation';
 import { Federation } from './Federation';
 
 /**
@@ -47,7 +47,7 @@ export interface FederationManager {
    * Gets the federations configurations.
    * @returns The federations configuration object containing all federation settings.
    */
-  getConfigurations(): FederationsConfig;
+  getConfigurations(): FederationRegistry;
   
   /**
    * Gets a Federation instance by its ID.
