@@ -16,14 +16,21 @@
  */
 
 import { z } from 'zod';
-import { userSchema, clientSchema } from '@vecrea/au3te-ts-common/schemas.common';
+import {
+  userSchema,
+  clientSchema,
+} from '@vecrea/au3te-ts-common/schemas.common';
 import { authorizationDecisionParamsSchema } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
+import { federationParamsSchema } from '@vecrea/au3te-ts-common/schemas.federation';
 import { SessionSchemas } from './types';
+import { authorizationPageModelSchema } from '@vecrea/au3te-ts-common/handler.authorization-page';
 
-export const sessionSchemas = {
+export const sessionSchemas: SessionSchemas = {
   authorizationDecisionParams: authorizationDecisionParamsSchema,
   acrs: z.array(z.string()).nullish(),
   user: userSchema,
   client: clientSchema,
   authTime: z.number(),
+  federationParams: federationParamsSchema,
+  authorizationPageModel: authorizationPageModelSchema,
 } satisfies SessionSchemas;

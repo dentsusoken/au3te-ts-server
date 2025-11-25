@@ -79,6 +79,7 @@ import { createToApiRequest, CreateToApiRequestParams } from './toApiRequest';
 import { createProcessRequestWithOptions } from '../core/processRequestWithOptions';
 import { ApiRequestWithOptions } from '../core/types';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
+import { FederationManager } from '@/federation/FederationManager';
 
 /**
  * Parameters for constructing AuthorizationHandlerConfigurationImpl.
@@ -99,6 +100,7 @@ export type AuthorizationHandlerConfigurationImplConstructorParams<
   authorizationPageHandlerConfiguration: AuthorizationPageHandlerConfiguration;
   /** Extractor configuration */
   extractorConfiguration: ExtractorConfiguration;
+  federationManager: FederationManager;
   /** Overrides for extending handler behaviour */
   overrides?: AuthorizationHandlerConfigurationImplOverrides<SS, OPTS>;
 };
@@ -126,9 +128,15 @@ export type HandleNoInteractionFactory<SS extends SessionSchemas> = (
   params: CreateHandleNoInteractionParams
 ) => HandleNoInteraction<SS>;
 
-export type ProcessApiResponseFactory<SS extends SessionSchemas, OPTS = unknown> = (
+export type ProcessApiResponseFactory<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = (
   params: CreateProcessApiResponseParams4Authorization<SS, OPTS>
-) => ProcessApiResponse<ApiResponseWithOptions<AuthorizationResponse, OPTS>, OPTS>;
+) => ProcessApiResponse<
+  ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+  OPTS
+>;
 
 export type HandleFactory<OPTS = unknown> = (
   params: CreateHandleWithOptionsParams<
@@ -176,7 +184,9 @@ export type AuthorizationHandlerConfigurationImplOverrides<
   createHandle?: HandleFactory<OPTS>;
   handle?: HandleWithOptions<AuthorizationRequest, OPTS>;
   createToApiRequest?: ToApiRequestFactory<OPTS>;
-  toApiRequest?: ToApiRequest<ApiRequestWithOptions<AuthorizationRequest, OPTS>>;
+  toApiRequest?: ToApiRequest<
+    ApiRequestWithOptions<AuthorizationRequest, OPTS>
+  >;
   createProcessRequest?: ProcessRequestFactory<OPTS>;
   processRequest?: ProcessRequestWithOptions<OPTS>;
 };
@@ -259,6 +269,7 @@ export class AuthorizationHandlerConfigurationImpl<
     authorizationFailHandlerConfiguration,
     authorizationPageHandlerConfiguration,
     extractorConfiguration,
+    // federationManager,
     overrides,
   }: AuthorizationHandlerConfigurationImplConstructorParams<SS, OPTS>) {
     const {
@@ -321,6 +332,7 @@ export class AuthorizationHandlerConfigurationImpl<
         clearCurrentUserInfoInSessionIfNecessary:
           this.clearCurrentUserInfoInSessionIfNecessary,
         buildResponse: this.buildResponse,
+        // federationManager,
       });
 
     this.checkSubject = resolvedOverrides.checkSubject ?? defaultCheckSubject;
@@ -375,10 +387,7 @@ export class AuthorizationHandlerConfigurationImpl<
 
     this.toApiRequest =
       resolvedOverrides.toApiRequest ??
-      (
-        resolvedOverrides.createToApiRequest ??
-        createToApiRequest<OPTS>
-      )({
+      (resolvedOverrides.createToApiRequest ?? createToApiRequest<OPTS>)({
         extractParameters: extractorConfiguration.extractParameters,
       });
 
