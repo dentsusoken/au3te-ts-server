@@ -6,7 +6,7 @@ import { IntrospectionHandlerConfiguration } from '../../introspection/Introspec
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import { CredentialSingleParseHandlerConfiguration } from '../../credential-single-parse/CredentialSingleParseHandlerConfiguration';
 import { CommonCredentialHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.credential';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 
 describe('CredentialSingleIssueHandlerConfigurationImpl', () => {
   // Mock functions
@@ -42,7 +42,7 @@ describe('CredentialSingleIssueHandlerConfigurationImpl', () => {
     apiClient: mockApiClient,
     buildUnknownActionMessage: vi.fn(),
     prepareHeaders: vi.fn(),
-  } as unknown as ServerHandlerConfiguration<typeof sessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<typeof defaultSessionSchemas>;
 
   const mockCredentialSingleParseHandlerConfiguration = {
     processApiRequestWithValidation: mockProcessApiRequestWithValidation,

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createToApiRequest } from '../toApiRequest';
 import { Session } from '../../../session/Session';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 import { createResponseErrorFactory } from '../../core/responseErrorFactory';
 import { defaultResponseFactory } from '../../core/responseFactory';
 
@@ -9,7 +9,7 @@ describe('createToApiRequest', () => {
   // Mock dependencies
   const mockSession = {
     deleteBatch: vi.fn(),
-  } as unknown as Session<typeof sessionSchemas>;
+  } as unknown as Session<typeof defaultSessionSchemas>;
 
   const mockDeleteBatch = vi.mocked(mockSession.deleteBatch);
   const mockExtractParameters = vi.fn();

@@ -17,7 +17,7 @@
 
 import { Session } from '../../session/Session';
 import { SessionSchemas } from '../../session/types';
-import { sessionSchemas } from '../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../session/sessionSchemas';
 
 /**
  * Type definition for a function that clears current user information from the session.
@@ -30,7 +30,7 @@ export type ClearCurrentUserInfoInSession<SS extends SessionSchemas> = (
 ) => Promise<void>;
 
 export const defaultClearCurrentUserInfoInSession: ClearCurrentUserInfoInSession<
-  typeof sessionSchemas
+  typeof defaultSessionSchemas
 > = async (session) => {
   await session.deleteBatch('user', 'authTime');
 };

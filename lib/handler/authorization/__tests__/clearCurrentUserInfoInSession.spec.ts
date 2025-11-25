@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Session } from '../../../session/Session';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 import { defaultClearCurrentUserInfoInSession } from '../clearCurrentUserInfoInSession';
 
 describe('defaultClearCurrentUserInfoInSession', () => {
@@ -8,7 +8,7 @@ describe('defaultClearCurrentUserInfoInSession', () => {
     // Create a mock BaseSession
     const mockSession = {
       deleteBatch: vi.fn().mockResolvedValue(undefined),
-    } as unknown as Session<typeof sessionSchemas>;
+    } as unknown as Session<typeof defaultSessionSchemas>;
 
     // Call the function
     await defaultClearCurrentUserInfoInSession(mockSession);

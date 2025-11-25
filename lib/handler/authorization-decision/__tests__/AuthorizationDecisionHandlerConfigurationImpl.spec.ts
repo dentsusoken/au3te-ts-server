@@ -20,7 +20,7 @@ import { AuthorizationDecisionHandlerConfigurationImpl } from '../AuthorizationD
 import type { AuthorizationDecisionHandlerConfigurationImplOverrides } from '../AuthorizationDecisionHandlerConfigurationImpl';
 import type { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import type { Session } from '../../../session/Session';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 import type { ExtractorConfiguration } from '../../../extractor/ExtractorConfiguration';
 import type { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
 import type { AuthorizationHandlerConfiguration } from '../../authorization/AuthorizationHandlerConfiguration';
@@ -41,10 +41,10 @@ import type { User } from '@vecrea/au3te-ts-common/schemas.common';
 */
 
 type Dependencies = {
-  serverHandlerConfiguration: ServerHandlerConfiguration<typeof sessionSchemas>;
+  serverHandlerConfiguration: ServerHandlerConfiguration<typeof defaultSessionSchemas>;
   extractorConfiguration: ExtractorConfiguration;
   userHandlerConfiguration: UserHandlerConfiguration;
-  authorizationHandlerConfiguration: AuthorizationHandlerConfiguration<typeof sessionSchemas, unknown>;
+  authorizationHandlerConfiguration: AuthorizationHandlerConfiguration<typeof defaultSessionSchemas, unknown>;
   authorizationIssueHandlerConfiguration: AuthorizationIssueHandlerConfiguration;
   authorizationFailHandlerConfiguration: AuthorizationFailHandlerConfiguration;
 };
@@ -66,7 +66,7 @@ const createDependencies = (): Dependencies => {
       acrs: [],
       client: {},
     })),
-  } as unknown as Session<typeof sessionSchemas>;
+  } as unknown as Session<typeof defaultSessionSchemas>;
 
   const responseErrorFactory = {
     badRequestResponseError: vi.fn((message: string) => new Error(message)),
@@ -79,7 +79,7 @@ const createDependencies = (): Dependencies => {
     recoverResponseResult: vi.fn(async () => new Response(null, { status: 500 })),
     prepareHeaders: vi.fn(),
     buildUnknownActionMessage: vi.fn(),
-  } as unknown as ServerHandlerConfiguration<typeof sessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<typeof defaultSessionSchemas>;
 
   const extractorConfiguration = {
     extractParameters: vi.fn(async () => 'authorized=true&loginId=user&password=pass'),
@@ -91,7 +91,7 @@ const createDependencies = (): Dependencies => {
 
   const authorizationHandlerConfiguration = {
     calcSub: vi.fn(async () => 'sub'),
-  } as unknown as AuthorizationHandlerConfiguration<typeof sessionSchemas>;
+  } as unknown as AuthorizationHandlerConfiguration<typeof defaultSessionSchemas>;
 
   const authorizationIssueHandlerConfiguration = {
     handle: vi.fn(async () => new Response(null, { status: 204 })),

@@ -33,7 +33,7 @@ import { ProcessRequest } from '../core/processRequest';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
 import { createToApiRequest } from '../core/toClientAuthRequest';
 import { createProcessRequest } from '../core/processRequest';
-import { sessionSchemas } from '../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../session/sessionSchemas';
 
 /** The path for the PAR endpoint */
 export const PAR_PATH = '/api/par';
@@ -43,7 +43,7 @@ export const PAR_PATH = '/api/par';
  * This class configures and handles Pushed Authorization Requests (PAR).
  */
 export class ParHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
+  SS extends SessionSchemas = typeof defaultSessionSchemas
 > implements ParHandlerConfiguration
 {
   /** The path for the PAR endpoint. */
