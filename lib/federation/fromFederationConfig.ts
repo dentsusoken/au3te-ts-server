@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 import {
-  FederationClientConfig,
   FederationConfig,
-  FederationServerConfig,
+  OidcClientConfig,
+  OidcServerConfig,
 } from '@vecrea/au3te-ts-common/schemas.federation';
 
 /**
  * Type representing valid paths to access federation configuration values.
  * Can be:
  * - ['id'] for the federation ID
- * - ['client', key] for client configuration properties
- * - ['server', key] for server configuration properties
+ * - ['client', key] for client configuration properties (OIDC only)
+ * - ['server', key] for server configuration properties (OIDC only)
  */
 export type KeyOfFederationConfig =
   | ['id']
-  | ['client', keyof FederationClientConfig]
-  | ['server', keyof FederationServerConfig];
+  | ['client', keyof OidcClientConfig]
+  | ['server', keyof OidcServerConfig];
 
 /**
  * Extracts a value from federation configuration using a type-safe path.
@@ -42,8 +42,9 @@ export type FromFederationConfig = (
 
 /**
  * Creates a FromFederationConfig function for accessing federation configuration values.
- * @param config - The federation configuration object.
+ * @param config - The federation configuration object (must be OIDC protocol).
  * @returns A function that extracts configuration values using type-safe paths.
+ * @throws Error if the protocol is not 'oidc'.
  * @example
  * ```ts
  * const fromConfig = createFromFederationConfig(federationConfig);
@@ -52,14 +53,20 @@ export type FromFederationConfig = (
  * ```
  */
 export const createFromFederationConfig = (config: FederationConfig) => {
+  if (config.protocol !== 'oidc') {
+    throw new Error(
+      `Unsupported protocol: ${config.protocol}. Only 'oidc' protocol is supported.`
+    );
+  }
+
   return (path: KeyOfFederationConfig): string | null | undefined => {
     switch (path[0]) {
       case 'id':
         return config.id;
       case 'client':
-        return config.client[path[1]];
+        return (config.client as OidcClientConfig)[path[1]];
       case 'server':
-        return config.server[path[1]];
+        return (config.server as OidcServerConfig)[path[1]];
       default:
         return null;
     }

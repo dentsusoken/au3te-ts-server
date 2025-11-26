@@ -15,6 +15,7 @@ vi.mock('../FederationImpl', () => ({
 describe('FederationManagerImpl', () => {
   const createMockFederationConfig = (id: string): FederationConfig => ({
     id,
+    protocol: 'oidc',
     client: {
       clientId: `client-${id}`,
       clientSecret: `secret-${id}`,
@@ -94,12 +95,15 @@ describe('FederationManagerImpl', () => {
         federations: [
           {
             id: '',
+            protocol: 'oidc',
             client: {
+              protocol: 'oidc',
               clientId: 'test',
               clientSecret: 'secret',
               redirectUri: 'https://example.com',
             },
             server: {
+              protocol: 'oidc',
               name: 'Test',
               issuer: 'https://test.com',
             },
@@ -136,12 +140,15 @@ describe('FederationManagerImpl', () => {
           createMockFederationConfig('fed1'),
           {
             id: '',
+            protocol: 'oidc',
             client: {
+              protocol: 'oidc',
               clientId: 'test',
               clientSecret: 'secret',
               redirectUri: 'https://example.com',
             },
             server: {
+              protocol: 'oidc',
               name: 'Test',
               issuer: 'https://test.com',
             },

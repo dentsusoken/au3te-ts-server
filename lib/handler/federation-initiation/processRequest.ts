@@ -56,6 +56,7 @@ export const createProcessRequest = ({
     const codeVerifier = generateRandomCodeVerifier();
 
     await session.set('federationCallbackParams', {
+      protocol: 'oidc',
       state: state,
       codeVerifier: codeVerifier,
     });

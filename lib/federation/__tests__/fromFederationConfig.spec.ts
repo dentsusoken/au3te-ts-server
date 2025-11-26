@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { createFromFederationConfig } from '../fromFederationConfig';
-import { FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
+import {
+  FederationConfig,
+  OidcClientConfig,
+} from '@vecrea/au3te-ts-common/schemas.federation';
 
 describe('createFromFederationConfig', () => {
   const mockConfig: FederationConfig = {
     id: 'test-federation',
+    protocol: 'oidc',
     client: {
       clientId: 'test-client-id',
       clientSecret: 'test-client-secret',
@@ -75,12 +79,17 @@ describe('createFromFederationConfig', () => {
   });
 
   it('should handle null idTokenSignedResponseAlg', () => {
+    const client = mockConfig.client as OidcClientConfig;
     const configWithoutAlg: FederationConfig = {
-      ...mockConfig,
+      id: mockConfig.id,
+      protocol: 'oidc',
       client: {
-        ...mockConfig.client,
+        clientId: client.clientId,
+        clientSecret: client.clientSecret,
+        redirectUri: client.redirectUri,
         idTokenSignedResponseAlg: null,
       },
+      server: mockConfig.server,
     };
     const fromFederationConfig = createFromFederationConfig(configWithoutAlg);
     const result = fromFederationConfig(['client', 'idTokenSignedResponseAlg']);

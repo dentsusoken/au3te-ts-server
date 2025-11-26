@@ -105,11 +105,16 @@ export class FederationManagerImpl implements FederationManager {
 
   /**
    * Validates a single FederationConfig.
+   * Only OIDC protocol configurations are considered valid.
    * @param config - The federation configuration to validate
-   * @returns true if the configuration is valid, false otherwise
+   * @returns true if the configuration is valid (OIDC protocol), false otherwise
    */
   private isFederationConfigValid(config: FederationConfig): boolean {
     if (!config || typeof config !== 'object') {
+      return false;
+    }
+    // Only OIDC protocol is supported
+    if (config.protocol !== 'oidc') {
       return false;
     }
     if (!config.id || typeof config.id !== 'string') {

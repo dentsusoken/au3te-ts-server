@@ -112,6 +112,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     mockSession.get.mockImplementation((key: string) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });
@@ -215,6 +216,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     mockSession.get.mockImplementation((key: string) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });
@@ -248,6 +250,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     mockSession.get.mockImplementation((key: string) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           codeVerifier: 'test-verifier',
         });
       }
@@ -286,6 +289,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     mockSession.get.mockImplementation((key: string) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });

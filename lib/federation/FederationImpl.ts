@@ -105,11 +105,17 @@ export class FederationImpl implements Federation {
    * Creates a new FederationImpl instance.
    * Initializes all federation functions and sets up server metadata caching.
    * 
-   * @param config - The federation configuration containing client and server settings.
+   * @param config - The federation configuration containing client and server settings (must be OIDC protocol).
    * @param isDev - Whether running in development mode. Defaults to false.
    *                When true, allows insecure requests (e.g., HTTP instead of HTTPS).
+   * @throws Error if the protocol is not 'oidc'.
    */
   constructor(config: FederationConfig, isDev: boolean = false) {
+    if (config.protocol !== 'oidc') {
+      throw new Error(
+        `Unsupported protocol: ${config.protocol}. Only 'oidc' protocol is supported.`
+      );
+    }
     this.#config = config;
 
     this.fromFederationConfig = createFromFederationConfig(this.#config);

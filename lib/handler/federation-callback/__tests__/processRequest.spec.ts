@@ -91,6 +91,7 @@ describe('createProcessRequest (federation-callback)', () => {
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });
@@ -213,6 +214,7 @@ describe('createProcessRequest (federation-callback)', () => {
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });
@@ -251,6 +253,7 @@ describe('createProcessRequest (federation-callback)', () => {
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           codeVerifier: 'test-verifier',
         });
       }
@@ -294,6 +297,7 @@ describe('createProcessRequest (federation-callback)', () => {
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
+          protocol: 'oidc',
           state: 'test-state',
           codeVerifier: 'test-verifier',
         });

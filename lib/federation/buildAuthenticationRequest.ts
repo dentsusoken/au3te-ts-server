@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { calculatePKCECodeChallenge } from 'oauth4webapi';
-import { FederationAuthenticationRequest } from '@vecrea/au3te-ts-common/schemas.federation';
+import { OidcAuthenticationRequest } from '@vecrea/au3te-ts-common/schemas.federation';
 
 /**
  * Builds an OAuth2/OIDC authentication request URL with PKCE support.
@@ -69,7 +69,7 @@ export const createBuildAuthenticationRequest = (
       : undefined;
     const code_challenge_method = method === 'S256' ? 'S256' : 'plain';
 
-    const parameters: FederationAuthenticationRequest = {
+    const parameters: OidcAuthenticationRequest = {
       response_type: responseType,
       scope: scope.join(' '),
       client_id: await clientId(),

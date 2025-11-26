@@ -68,6 +68,13 @@ export const createProcessRequest = ({
         ).response;
       }
 
+      // Only OIDC protocol is supported
+      if (federationCallbackParams.protocol !== 'oidc') {
+        return responseErrorFactory.badRequestResponseError(
+          `Unsupported protocol: ${federationCallbackParams.protocol}. Only 'oidc' protocol is supported.`
+        ).response;
+      }
+
       const { state, codeVerifier } = federationCallbackParams;
 
       if (!state) {
