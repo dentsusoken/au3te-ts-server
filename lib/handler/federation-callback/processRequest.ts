@@ -17,28 +17,28 @@
 
 import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation';
-import { Session, SessionSchemas } from '@/session';
+import { DefaultSessionSchemas, Session } from '@/session';
 import { simpleBuildResponse } from '../authorization';
 import { ResponseErrorFactory } from '../core';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 export type ProcessRequest = (request: Request) => Promise<Response>;
 
-export type CreateProcessRequestParams<SS extends SessionSchemas> = {
+export type CreateProcessRequestParams = {
   path: string;
   extractPathParameter: ExtractPathParameter;
   federationManager: FederationManager;
   responseErrorFactory: ResponseErrorFactory;
-  session: Session<SS>;
+  session: Session<DefaultSessionSchemas>;
 };
 
-export const createProcessRequest = <SS extends SessionSchemas>({
+export const createProcessRequest = ({
   path,
   extractPathParameter,
   federationManager,
   responseErrorFactory,
   session,
-}: CreateProcessRequestParams<SS>): ProcessRequest => {
+}: CreateProcessRequestParams): ProcessRequest => {
   return async (request: Request) => {
     try {
       const { federationId } = extractPathParameter(request, path);
@@ -80,7 +80,7 @@ export const createProcessRequest = <SS extends SessionSchemas>({
         userinfo = await federation.processFederationResponse(
           new URL(request.url),
           state,
-          codeVerifier
+          codeVerifier ?? undefined
         );
       } catch (error) {
         return responseErrorFactory.badRequestResponseError(

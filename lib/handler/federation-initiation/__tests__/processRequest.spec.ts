@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProcessRequest } from '../processRequest';
 import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation/FederationManager';
-import { Session, SessionSchemas } from '@/session';
+import { DefaultSessionSchemas, Session } from '@/session';
 import { ResponseErrorFactory, ResponseFactory } from '../../core';
 
 describe('createProcessRequest (federation-initiation)', () => {
@@ -15,7 +15,7 @@ describe('createProcessRequest (federation-initiation)', () => {
       delete: vi.fn(),
       deleteBatch: vi.fn(),
       clear: vi.fn(),
-    } as unknown as Session<SessionSchemas>;
+    } as unknown as Session<DefaultSessionSchemas>;
 
     const mockExtractPathParameter: ExtractPathParameter = vi.fn(
       (request: Request, pattern: string) => {
@@ -34,9 +34,13 @@ describe('createProcessRequest (federation-initiation)', () => {
     );
 
     const mockFederation = {
-      createFederationRequest: vi.fn().mockResolvedValue(
-        new URL('https://auth-server.com/auth?state=test-state&code_challenge=challenge')
-      ),
+      createFederationRequest: vi
+        .fn()
+        .mockResolvedValue(
+          new URL(
+            'https://auth-server.com/auth?state=test-state&code_challenge=challenge'
+          )
+        ),
     };
 
     const mockFederationManager = {
@@ -58,16 +62,17 @@ describe('createProcessRequest (federation-initiation)', () => {
       internalServerErrorResponseError: vi.fn((message: string) => ({
         response: new Response(message, { status: 500 }),
       })),
-    };
+    } as unknown as ResponseErrorFactory;
 
     const mockResponseFactory: ResponseFactory = {
-      location: vi.fn((url: string) =>
-        new Response(null, {
-          status: 302,
-          headers: { Location: url },
-        })
+      location: vi.fn(
+        (url: string) =>
+          new Response(null, {
+            status: 302,
+            headers: { Location: url },
+          })
       ),
-    };
+    } as unknown as ResponseFactory;
 
     return {
       mockSession,
@@ -159,11 +164,11 @@ describe('createProcessRequest (federation-initiation)', () => {
 
     await processRequest(request);
 
-    const setCall = mockSession.set.mock.calls.find(
+    const setCall = (mockSession.set as ReturnType<typeof vi.fn>).mock.calls.find(
       (call) => call[0] === 'federationCallbackParams'
     );
     expect(setCall).toBeDefined();
-    const federationCallbackParams = setCall[1];
+    const federationCallbackParams = setCall?.[1];
     expect(federationCallbackParams.state).toBeDefined();
     expect(federationCallbackParams.codeVerifier).toBeDefined();
     expect(typeof federationCallbackParams.state).toBe('string');
@@ -229,10 +234,10 @@ describe('createProcessRequest (federation-initiation)', () => {
 
     await processRequest(request);
 
-    const setCall = mockSession.set.mock.calls.find(
+    const setCall = (mockSession.set as ReturnType<typeof vi.fn>).mock.calls.find(
       (call) => call[0] === 'federationCallbackParams'
     );
-    const federationCallbackParams = setCall[1];
+    const federationCallbackParams = setCall?.[1];
     const { state, codeVerifier } = federationCallbackParams;
 
     expect(mockFederation.createFederationRequest).toHaveBeenCalledWith(
@@ -250,7 +255,7 @@ describe('createProcessRequest (federation-initiation)', () => {
       mockResponseFactory,
     } = createMockDependencies();
 
-    mockExtractPathParameter.mockImplementation(() => {
+    (mockExtractPathParameter as ReturnType<typeof vi.fn>).mockImplementation(() => {
       throw new Error('Unexpected error');
     });
 
@@ -270,4 +275,3 @@ describe('createProcessRequest (federation-initiation)', () => {
     await expect(processRequest(request)).rejects.toThrow('Unexpected error');
   });
 });
-

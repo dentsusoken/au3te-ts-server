@@ -18,11 +18,11 @@ import { ServerHandlerConfiguration } from '../core';
 import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
 import { FederationCallbackHandlerConfiguration } from './FederationCallbackHandlerConfiguration';
-import { SessionSchemas } from '@/session/types';
 import { createProcessRequest } from './processRequest';
+import { DefaultSessionSchemas } from '@/session';
 
 export type FederationCallbackHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = {
   /** Server handler configuration */
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
@@ -40,7 +40,7 @@ export const FEDERATION_CALLBACK_PATH =
  * @template SS - The type of session schemas in use.
  */
 export class FederationCallbackHandlerConfigurationImpl<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > implements FederationCallbackHandlerConfiguration
 {
   /**
@@ -58,7 +58,7 @@ export class FederationCallbackHandlerConfigurationImpl<
     const { responseErrorFactory, session } = serverHandlerConfiguration;
     const { extractPathParameter } = extractorConfiguration;
 
-    this.processRequest = createProcessRequest<SS>({
+    this.processRequest = createProcessRequest({
       path: this.path,
       extractPathParameter,
       federationManager,

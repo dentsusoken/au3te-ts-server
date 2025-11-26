@@ -154,7 +154,7 @@ export class FederationImpl implements Federation {
         false
       )) ?? false;
 
-    // TODO
+    // TODO: In the original implementation, the scopes "email", "profile", "openid", "address", "phone" are hardcoded. However, since some IdPs don't support certain scopes, we should make it configurable to specify available scopes.
     this.buildAuthenticationRequestScope = () => ['openid'];
 
     this.buildAuthenticationRequest = createBuildAuthenticationRequest(

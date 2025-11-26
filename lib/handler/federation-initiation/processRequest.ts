@@ -17,29 +17,29 @@
 
 import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation';
-import { Session, SessionSchemas } from '@/session';
+import { DefaultSessionSchemas, Session } from '@/session';
 import { generateRandomCodeVerifier, generateRandomState } from 'oauth4webapi';
 import { ResponseErrorFactory, ResponseFactory } from '../core';
 
 export type ProcessRequest = (request: Request) => Promise<Response>;
 
-export type CreateProcessRequestParams<SS extends SessionSchemas> = {
+export type CreateProcessRequestParams = {
   path: string;
   extractPathParameter: ExtractPathParameter;
   federationManager: FederationManager;
   responseErrorFactory: ResponseErrorFactory;
-  session: Session<SS>;
+  session: Session<DefaultSessionSchemas>;
   responseFactory: ResponseFactory;
 };
 
-export const createProcessRequest = <SS extends SessionSchemas> ({
+export const createProcessRequest = ({
   path,
   extractPathParameter,
   federationManager,
   responseErrorFactory,
   session,
   responseFactory,
-}: CreateProcessRequestParams<SS>): ProcessRequest => {
+}: CreateProcessRequestParams): ProcessRequest => {
   return async (request) => {
     const { federationId } = extractPathParameter(request, path);
 

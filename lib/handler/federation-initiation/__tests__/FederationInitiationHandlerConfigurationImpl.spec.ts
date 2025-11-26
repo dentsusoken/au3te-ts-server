@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FederationInitiationHandlerConfigurationImpl } from '../FederationInitiationHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
-import { SessionSchemas } from '../../../session/types';
 import { FederationManager } from '@/federation/FederationManager';
 import { ExtractorConfiguration } from '@/extractor/ExtractorConfiguration';
 import { FEDERATION_INITIATION_PATH } from '../FederationInitiationHandlerConfigurationImpl';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('FederationInitiationHandlerConfigurationImpl', () => {
   const createMockDependencies = () => {
@@ -33,7 +33,7 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
         })),
       },
       session: mockSession,
-    } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+    } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
     const mockExtractorConfiguration = {
       extractPathParameter: vi.fn((request: Request, pattern: string) => {

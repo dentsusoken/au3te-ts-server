@@ -2,9 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProcessRequest } from '../processRequest';
 import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation/FederationManager';
-import { Session, SessionSchemas } from '@/session';
+import { DefaultSessionSchemas, Session } from '@/session';
 import { ResponseErrorFactory } from '../../core';
-import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 describe('createProcessRequest (federation-callback)', () => {
   const createMockDependencies = () => {
@@ -16,7 +15,7 @@ describe('createProcessRequest (federation-callback)', () => {
       delete: vi.fn(),
       deleteBatch: vi.fn(),
       clear: vi.fn(),
-    } as unknown as Session<SessionSchemas>;
+    } as unknown as Session<DefaultSessionSchemas>;
 
     const mockExtractPathParameter: ExtractPathParameter = vi.fn(
       (request: Request, pattern: string) => {
@@ -63,7 +62,7 @@ describe('createProcessRequest (federation-callback)', () => {
       internalServerErrorResponseError: vi.fn((message: string) => ({
         response: new Response(message, { status: 500 }),
       })),
-    };
+    } as unknown as ResponseErrorFactory;
 
     return {
       mockSession,
@@ -89,7 +88,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockUserInfo,
     } = createMockDependencies();
 
-    mockSession.get.mockImplementation((key: string) => {
+    (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
@@ -181,7 +180,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockResponseErrorFactory,
     } = createMockDependencies();
 
-    mockSession.get.mockResolvedValue(null);
+    (mockSession.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
     const processRequest = createProcessRequest({
       path: '/api/federation/callback/:federationId',
@@ -198,9 +197,9 @@ describe('createProcessRequest (federation-callback)', () => {
     const response = await processRequest(request);
 
     expect(response.status).toBe(400);
-    expect(mockResponseErrorFactory.badRequestResponseError).toHaveBeenCalledWith(
-      'Federation parameters not found'
-    );
+    expect(
+      mockResponseErrorFactory.badRequestResponseError
+    ).toHaveBeenCalledWith('Federation parameters not found');
   });
 
   it('should return 400 when authorizationPageModel not found', async () => {
@@ -211,7 +210,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockResponseErrorFactory,
     } = createMockDependencies();
 
-    mockSession.get.mockImplementation((key: string) => {
+    (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
@@ -236,9 +235,9 @@ describe('createProcessRequest (federation-callback)', () => {
     const response = await processRequest(request);
 
     expect(response.status).toBe(400);
-    expect(mockResponseErrorFactory.badRequestResponseError).toHaveBeenCalledWith(
-      'Authorization page model not found'
-    );
+    expect(
+      mockResponseErrorFactory.badRequestResponseError
+    ).toHaveBeenCalledWith('Authorization page model not found');
   });
 
   it('should return 400 when state not found in federationCallbackParams', async () => {
@@ -249,7 +248,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockResponseErrorFactory,
     } = createMockDependencies();
 
-    mockSession.get.mockImplementation((key: string) => {
+    (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
           codeVerifier: 'test-verifier',
@@ -278,9 +277,9 @@ describe('createProcessRequest (federation-callback)', () => {
     const response = await processRequest(request);
 
     expect(response.status).toBe(400);
-    expect(mockResponseErrorFactory.badRequestResponseError).toHaveBeenCalledWith(
-      'State not found'
-    );
+    expect(
+      mockResponseErrorFactory.badRequestResponseError
+    ).toHaveBeenCalledWith('State not found');
   });
 
   it('should handle federation response processing error', async () => {
@@ -292,7 +291,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockResponseErrorFactory,
     } = createMockDependencies();
 
-    mockSession.get.mockImplementation((key: string) => {
+    (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
       if (key === 'federationCallbackParams') {
         return Promise.resolve({
           state: 'test-state',
@@ -326,7 +325,9 @@ describe('createProcessRequest (federation-callback)', () => {
     const response = await processRequest(request);
 
     expect(response.status).toBe(400);
-    expect(mockResponseErrorFactory.badRequestResponseError).toHaveBeenCalledWith(
+    expect(
+      mockResponseErrorFactory.badRequestResponseError
+    ).toHaveBeenCalledWith(
       'Failed to process federation response: Failed to process federation response'
     );
   });
@@ -339,7 +340,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockResponseErrorFactory,
     } = createMockDependencies();
 
-    mockExtractPathParameter.mockImplementation(() => {
+    (mockExtractPathParameter as ReturnType<typeof vi.fn>).mockImplementation(() => {
       throw new Error('Unexpected error');
     });
 
@@ -363,4 +364,3 @@ describe('createProcessRequest (federation-callback)', () => {
     ).toHaveBeenCalledWith('Unexpected error: Unexpected error');
   });
 });
-

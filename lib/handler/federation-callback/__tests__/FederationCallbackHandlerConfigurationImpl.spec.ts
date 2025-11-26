@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FederationCallbackHandlerConfigurationImpl } from '../FederationCallbackHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
-import { SessionSchemas } from '../../../session/types';
 import { FederationManager } from '@/federation/FederationManager';
 import { ExtractorConfiguration } from '@/extractor/ExtractorConfiguration';
 import { FEDERATION_CALLBACK_PATH } from '../FederationCallbackHandlerConfigurationImpl';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('FederationCallbackHandlerConfigurationImpl', () => {
   const createMockDependencies = () => {
@@ -31,7 +31,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
         })),
       },
       session: mockSession,
-    } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+    } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
     const mockExtractorConfiguration = {
       extractPathParameter: vi.fn((request: Request, pattern: string) => {
@@ -83,8 +83,11 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
   });
 
   it('should initialize with correct path', () => {
-    const { mockServerHandlerConfiguration, mockExtractorConfiguration, mockFederationManager } =
-      createMockDependencies();
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+    } = createMockDependencies();
 
     const config = new FederationCallbackHandlerConfigurationImpl({
       serverHandlerConfiguration: mockServerHandlerConfiguration,
@@ -133,11 +136,12 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
 
     const response = await config.processRequest(request);
 
-    expect(mockExtractorConfiguration.extractPathParameter).toHaveBeenCalledWith(
-      request,
-      FEDERATION_CALLBACK_PATH
+    expect(
+      mockExtractorConfiguration.extractPathParameter
+    ).toHaveBeenCalledWith(request, FEDERATION_CALLBACK_PATH);
+    expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
+      'test-federation'
     );
-    expect(mockFederationManager.getFederation).toHaveBeenCalledWith('test-federation');
     expect(mockFederation.processFederationResponse).toHaveBeenCalledWith(
       expect.any(URL),
       'test-state',
@@ -154,8 +158,11 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
   });
 
   it('should return 404 for unknown federation ID', async () => {
-    const { mockServerHandlerConfiguration, mockExtractorConfiguration, mockFederationManager } =
-      createMockDependencies();
+    const {
+      mockServerHandlerConfiguration,
+      mockExtractorConfiguration,
+      mockFederationManager,
+    } = createMockDependencies();
 
     const config = new FederationCallbackHandlerConfigurationImpl({
       serverHandlerConfiguration: mockServerHandlerConfiguration,
@@ -310,4 +317,3 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     expect(response.status).toBe(400);
   });
 });
-

@@ -15,15 +15,15 @@
  * License.
  */
 
-import { SessionSchemas } from '../../session/types';
 import { ServerHandlerConfiguration } from '../core';
 import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
 import { FederationInitiationHandlerConfiguration } from './FederationInitiationHandlerConfiguration';
 import { createProcessRequest } from './processRequest';
+import { DefaultSessionSchemas } from '@/session';
 
 export type FederationInitiationHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = {
   /** Server handler configuration */
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
@@ -41,7 +41,7 @@ export const FEDERATION_INITIATION_PATH =
  * @template SS - The type of session schemas in use.
  */
 export class FederationInitiationHandlerConfigurationImpl<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > implements FederationInitiationHandlerConfiguration
 {
   /**
@@ -61,7 +61,7 @@ export class FederationInitiationHandlerConfigurationImpl<
 
     const { extractPathParameter } = extractorConfiguration;
 
-    this.processRequest = createProcessRequest<SS>({
+    this.processRequest = createProcessRequest({
       path: this.path,
       extractPathParameter,
       federationManager,
