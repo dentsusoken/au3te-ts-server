@@ -50,14 +50,15 @@ import {
   createProcessFederationResponse,
   ProcessFederationResponse,
 } from './processFederationResponse';
+import { createBuildAuthenticationRequestScope } from './buildAuthenticationRequestScope';
 
 /**
  * Implementation of the Federation interface.
  * Manages configuration and operations for federating with an external identity provider.
- * 
+ *
  * This class initializes all federation-related functions based on the provided configuration
  * and handles caching of server metadata for efficient operation.
- * 
+ *
  * @example
  * ```ts
  * const config: FederationConfig = {
@@ -104,7 +105,7 @@ export class FederationImpl implements Federation {
   /**
    * Creates a new FederationImpl instance.
    * Initializes all federation functions and sets up server metadata caching.
-   * 
+   *
    * @param config - The federation configuration containing client and server settings (must be OIDC protocol).
    * @param isDev - Whether running in development mode. Defaults to false.
    *                When true, allows insecure requests (e.g., HTTP instead of HTTPS).
@@ -120,14 +121,20 @@ export class FederationImpl implements Federation {
 
     this.fromFederationConfig = createFromFederationConfig(this.#config);
     this.issuer = () =>
-      new URL(this.fromFederationConfig(['server', 'issuer'])!);
-    this.clientId = () => this.fromFederationConfig(['client', 'clientId'])!;
+      new URL(this.fromFederationConfig(['server', 'issuer']) as string);
+    this.clientId = () =>
+      this.fromFederationConfig(['client', 'clientId']) as string;
     this.clientSecret = () =>
-      this.fromFederationConfig(['client', 'clientSecret'])!;
+      this.fromFederationConfig(['client', 'clientSecret']) as
+        | string
+        | undefined;
     this.redirectUri = () =>
-      new URL(this.fromFederationConfig(['client', 'redirectUri'])!);
+      new URL(this.fromFederationConfig(['client', 'redirectUri']) as string);
     this.idTokenSignedResponseAlg = () =>
-      this.fromFederationConfig(['client', 'idTokenSignedResponseAlg'])!;
+      this.fromFederationConfig(['client', 'idTokenSignedResponseAlg']) as
+        | string
+        | null
+        | undefined;
 
     this.getServerMetadata = createGetServerMetadata(
       this.#serverMetadata,
@@ -160,8 +167,9 @@ export class FederationImpl implements Federation {
         false
       )) ?? false;
 
-    // TODO: In the original implementation, the scopes "email", "profile", "openid", "address", "phone" are hardcoded. However, since some IdPs don't support certain scopes, we should make it configurable to specify available scopes.
-    this.buildAuthenticationRequestScope = () => ['openid'];
+    this.buildAuthenticationRequestScope = createBuildAuthenticationRequestScope(
+      this.fromFederationConfig
+    );
 
     this.buildAuthenticationRequest = createBuildAuthenticationRequest(
       this.authorizationEndpoint,

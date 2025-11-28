@@ -10,6 +10,7 @@ describe('createFromFederationConfig', () => {
     id: 'test-federation',
     protocol: 'oidc',
     client: {
+      scopes: ['openid'],
       clientId: 'test-client-id',
       clientSecret: 'test-client-secret',
       redirectUri: 'https://example.com/callback',
@@ -84,6 +85,7 @@ describe('createFromFederationConfig', () => {
       id: mockConfig.id,
       protocol: 'oidc',
       client: {
+        scopes: client.scopes,
         clientId: client.clientId,
         clientSecret: client.clientSecret,
         redirectUri: client.redirectUri,

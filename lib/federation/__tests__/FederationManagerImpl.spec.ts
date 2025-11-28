@@ -20,6 +20,7 @@ describe('FederationManagerImpl', () => {
       clientId: `client-${id}`,
       clientSecret: `secret-${id}`,
       redirectUri: `https://example.com/callback/${id}`,
+      scopes: ['openid'],
       idTokenSignedResponseAlg: 'RS256',
     },
     server: {
@@ -101,6 +102,7 @@ describe('FederationManagerImpl', () => {
               clientId: 'test',
               clientSecret: 'secret',
               redirectUri: 'https://example.com',
+              scopes: ['openid'],
             },
             server: {
               protocol: 'oidc',
@@ -146,6 +148,7 @@ describe('FederationManagerImpl', () => {
               clientId: 'test',
               clientSecret: 'secret',
               redirectUri: 'https://example.com',
+              scopes: ['openid'],
             },
             server: {
               protocol: 'oidc',

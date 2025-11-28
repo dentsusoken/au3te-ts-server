@@ -38,7 +38,7 @@ export type KeyOfFederationConfig =
  */
 export type FromFederationConfig = (
   path: KeyOfFederationConfig
-) => string | null | undefined;
+) => string | string[] | null | undefined;
 
 /**
  * Creates a FromFederationConfig function for accessing federation configuration values.
@@ -59,7 +59,7 @@ export const createFromFederationConfig = (config: FederationConfig) => {
     );
   }
 
-  return (path: KeyOfFederationConfig): string | null | undefined => {
+  return (path: KeyOfFederationConfig): string | string[] | null | undefined => {
     switch (path[0]) {
       case 'id':
         return config.id;
