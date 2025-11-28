@@ -4,6 +4,8 @@ import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation/FederationManager';
 import { DefaultSessionSchemas, Session } from '@/session';
 import { ResponseErrorFactory } from '../../core';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
+import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
 
 describe('createProcessRequest (federation-callback)', () => {
   const createMockDependencies = () => {
@@ -32,6 +34,11 @@ describe('createProcessRequest (federation-callback)', () => {
         return params;
       }
     );
+
+
+    const mockUserHandler = {
+      addUser: vi.fn(),
+    } as unknown as UserHandlerConfiguration<User>;
 
     const mockUserInfo = {
       sub: 'user123',
@@ -70,7 +77,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockFederationManager,
       mockFederation,
       mockResponseErrorFactory,
-      mockUserInfo,
+      mockUserInfo,mockUserHandler
     };
   };
 
@@ -85,7 +92,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockFederationManager,
       mockFederation,
       mockResponseErrorFactory,
-      mockUserInfo,
+      mockUserInfo,mockUserHandler
     } = createMockDependencies();
 
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
@@ -110,6 +117,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -130,18 +138,19 @@ describe('createProcessRequest (federation-callback)', () => {
       'test-state',
       'test-verifier'
     );
+    const { sub, ...userInfoWithoutSub } = mockUserInfo;
     expect(mockSession.setBatch).toHaveBeenCalledWith({
       user: expect.objectContaining({
-        ...mockUserInfo,
-        subject: `${mockUserInfo.sub}@test-federation`,
+        ...userInfoWithoutSub,
+        subject: `${sub}@test-federation`,
       }),
       authTime: expect.any(Number),
     });
     expect(response.status).toBe(200);
     const responseBody = await response.json();
     expect(responseBody.user).toEqual({
-      ...mockUserInfo,
-      subject: `${mockUserInfo.sub}@test-federation`,
+      ...userInfoWithoutSub,
+      subject: `${sub}@test-federation`,
     });
   });
 
@@ -151,6 +160,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockExtractPathParameter,
       mockFederationManager,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     const processRequest = createProcessRequest({
@@ -159,6 +169,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -179,6 +190,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockExtractPathParameter,
       mockFederationManager,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     (mockSession.get as ReturnType<typeof vi.fn>).mockResolvedValue(null);
@@ -189,6 +201,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -209,6 +222,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockExtractPathParameter,
       mockFederationManager,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
@@ -228,6 +242,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -248,6 +263,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockExtractPathParameter,
       mockFederationManager,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
@@ -271,6 +287,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -292,6 +309,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockFederationManager,
       mockFederation,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     (mockSession.get as ReturnType<typeof vi.fn>).mockImplementation((key: keyof DefaultSessionSchemas) => {
@@ -320,6 +338,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -342,6 +361,7 @@ describe('createProcessRequest (federation-callback)', () => {
       mockExtractPathParameter,
       mockFederationManager,
       mockResponseErrorFactory,
+      mockUserHandler,
     } = createMockDependencies();
 
     (mockExtractPathParameter as ReturnType<typeof vi.fn>).mockImplementation(() => {
@@ -354,6 +374,7 @@ describe('createProcessRequest (federation-callback)', () => {
       federationManager: mockFederationManager,
       responseErrorFactory: mockResponseErrorFactory,
       session: mockSession,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(

@@ -5,6 +5,8 @@ import { FederationManager } from '@/federation/FederationManager';
 import { ExtractorConfiguration } from '@/extractor/ExtractorConfiguration';
 import { FEDERATION_CALLBACK_PATH } from '../FederationCallbackHandlerConfigurationImpl';
 import { DefaultSessionSchemas } from '@/session';
+import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 describe('FederationCallbackHandlerConfigurationImpl', () => {
   const createMockDependencies = () => {
@@ -49,6 +51,10 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       }),
     } as unknown as ExtractorConfiguration;
 
+    const mockUserHandler = {
+      addUser: vi.fn(),
+    } as unknown as UserHandlerConfiguration<User>;
+
     const mockUserInfo = {
       sub: 'user123',
       name: 'Test User',
@@ -75,6 +81,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockFederation,
       mockSession,
       mockUserInfo,
+      mockUserHandler,
     };
   };
 
@@ -87,12 +94,14 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockServerHandlerConfiguration,
       mockExtractorConfiguration,
       mockFederationManager,
+      mockUserHandler,
     } = createMockDependencies();
 
     const config = new FederationCallbackHandlerConfigurationImpl({
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     expect(config.path).toBe(FEDERATION_CALLBACK_PATH);
@@ -107,6 +116,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockFederation,
       mockSession,
       mockUserInfo,
+      mockUserHandler,
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
@@ -129,6 +139,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -148,10 +159,11 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       'test-state',
       'test-verifier'
     );
+    const { sub, ...userInfoWithoutSub } = mockUserInfo;
     expect(mockSession.setBatch).toHaveBeenCalledWith({
       user: expect.objectContaining({
-        ...mockUserInfo,
-        subject: `${mockUserInfo.sub}@test-federation`,
+        ...userInfoWithoutSub,
+        subject: `${sub}@test-federation`,
       }),
       authTime: expect.any(Number),
     });
@@ -162,13 +174,14 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     const {
       mockServerHandlerConfiguration,
       mockExtractorConfiguration,
-      mockFederationManager,
+      mockFederationManager,mockUserHandler
     } = createMockDependencies();
 
     const config = new FederationCallbackHandlerConfigurationImpl({
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -186,6 +199,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockExtractorConfiguration,
       mockFederationManager,
       mockSession,
+      mockUserHandler,
     } = createMockDependencies();
 
     mockSession.get.mockResolvedValue(null);
@@ -194,6 +208,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -211,6 +226,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockExtractorConfiguration,
       mockFederationManager,
       mockSession,
+      mockUserHandler,
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
@@ -228,6 +244,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -245,6 +262,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockExtractorConfiguration,
       mockFederationManager,
       mockSession,
+      mockUserHandler,
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
@@ -266,6 +284,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(
@@ -284,6 +303,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       mockFederationManager,
       mockFederation,
       mockSession,
+      mockUserHandler,
     } = createMockDependencies();
 
     mockSession.get.mockImplementation((key: string) => {
@@ -310,6 +330,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
       serverHandlerConfiguration: mockServerHandlerConfiguration,
       extractorConfiguration: mockExtractorConfiguration,
       federationManager: mockFederationManager,
+      userHandler: mockUserHandler,
     });
 
     const request = new Request(

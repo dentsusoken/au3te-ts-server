@@ -15,3 +15,4 @@
  */
 export * from './FederationCallbackHandlerConfiguration';
 export * from './FederationCallbackHandlerConfigurationImpl';
+export * from './processRequest';

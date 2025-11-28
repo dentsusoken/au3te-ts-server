@@ -18,17 +18,40 @@ import { ServerHandlerConfiguration } from '../core';
 import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
 import { FederationCallbackHandlerConfiguration } from './FederationCallbackHandlerConfiguration';
-import { createProcessRequest } from './processRequest';
+import {
+  createProcessRequest,
+  CreateProcessRequestParams,
+  ProcessRequest,
+} from './processRequest';
 import { DefaultSessionSchemas } from '@/session';
+import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
+
+export type FederationCallbackHandlerConfigurationImplOverrides<
+  SS extends DefaultSessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = {
+  createProcessRequest: (
+    params: CreateProcessRequestParams<SS, U, T>
+  ) => ProcessRequest;
+};
 
 export type FederationCallbackHandlerConfigurationImplConstructorParams<
-  SS extends DefaultSessionSchemas
+  SS extends DefaultSessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
 > = {
   /** Server handler configuration */
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
   /** Extractor configuration */
   extractorConfiguration: ExtractorConfiguration;
+  /** Federation manager */
   federationManager: FederationManager;
+  /** User handler */
+  userHandler: UserHandlerConfiguration<U, T>;
+  /** Overrides for extending handler behaviour */
+  overrides?: FederationCallbackHandlerConfigurationImplOverrides<SS, U, T>;
 };
 
 export const FEDERATION_CALLBACK_PATH =
@@ -40,7 +63,9 @@ export const FEDERATION_CALLBACK_PATH =
  * @template SS - The type of session schemas in use.
  */
 export class FederationCallbackHandlerConfigurationImpl<
-  SS extends DefaultSessionSchemas
+  SS extends DefaultSessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
 > implements FederationCallbackHandlerConfiguration
 {
   /**
@@ -54,16 +79,25 @@ export class FederationCallbackHandlerConfigurationImpl<
     serverHandlerConfiguration,
     extractorConfiguration,
     federationManager,
-  }: FederationCallbackHandlerConfigurationImplConstructorParams<SS>) {
+    userHandler,
+    overrides,
+  }: FederationCallbackHandlerConfigurationImplConstructorParams<SS, U, T>) {
     const { responseErrorFactory, session } = serverHandlerConfiguration;
     const { extractPathParameter } = extractorConfiguration;
 
-    this.processRequest = createProcessRequest({
+    const resolvedOverrides =
+      overrides ??
+      ({} as FederationCallbackHandlerConfigurationImplOverrides<SS, U, T>);
+
+    this.processRequest = (
+      resolvedOverrides.createProcessRequest ?? createProcessRequest<SS, U>
+    )({
       path: this.path,
       extractPathParameter,
       federationManager,
       responseErrorFactory,
       session,
+      userHandler,
     });
   }
 }

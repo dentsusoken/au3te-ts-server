@@ -21,25 +21,37 @@ import { DefaultSessionSchemas, Session } from '@/session';
 import { simpleBuildResponse } from '../authorization';
 import { ResponseErrorFactory } from '../core';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
+import { AuthorizationPageModel } from '@vecrea/au3te-ts-common/handler.authorization-page';
+import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
 
 export type ProcessRequest = (request: Request) => Promise<Response>;
 
-export type CreateProcessRequestParams = {
+export type CreateProcessRequestParams<
+  SS extends DefaultSessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = {
   path: string;
   extractPathParameter: ExtractPathParameter;
   federationManager: FederationManager;
   responseErrorFactory: ResponseErrorFactory;
-  session: Session<DefaultSessionSchemas>;
+  session: Session<SS>;
+  userHandler: UserHandlerConfiguration<U, T>;
 };
 
-export const createProcessRequest = ({
+export const createProcessRequest = <
+  SS extends DefaultSessionSchemas,
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+>({
   path,
   extractPathParameter,
   federationManager,
   responseErrorFactory,
   session,
-}: CreateProcessRequestParams): ProcessRequest => {
-  return async (request: Request) => {
+  userHandler,
+}: CreateProcessRequestParams<SS, U, T>): ProcessRequest => {
+  return async (request: Request): Promise<Response> => {
     try {
       const { federationId } = extractPathParameter(request, path);
 
@@ -97,10 +109,11 @@ export const createProcessRequest = ({
         ).response;
       }
 
-      const user: User = {
-        ...userinfo,
-        subject: `${userinfo.sub}@${federationId}`,
-      };
+      const { sub, ...userInfoWithoutSub } = userinfo;
+      const user: U = {
+        ...userInfoWithoutSub,
+        subject: `${sub}@${federationId}`,
+      } as U;
 
       const authTime = Math.floor(Date.now() / 1000);
 
@@ -110,8 +123,9 @@ export const createProcessRequest = ({
       });
 
       model.user = user;
+      await userHandler.addUser(user);
 
-      return simpleBuildResponse(model);
+      return simpleBuildResponse(model as AuthorizationPageModel);
     } catch (error) {
       return responseErrorFactory.internalServerErrorResponseError(
         `Unexpected error: ${

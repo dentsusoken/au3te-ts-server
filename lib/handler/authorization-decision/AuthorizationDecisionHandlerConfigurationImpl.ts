@@ -48,7 +48,7 @@ export type CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams
 > = {
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
   extractorConfiguration: ExtractorConfiguration;
-  userHandlerConfiguration: UserHandlerConfiguration;
+  userHandlerConfiguration: UserHandlerConfiguration<U, T>;
   authorizationHandlerConfiguration: AuthorizationHandlerConfiguration<
     SS,
     OPTS
