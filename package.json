@@ -145,9 +145,9 @@
     "@types/node": "^20.12.7",
     "dotenv": "^16.4.5",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^7.2.6",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^1.4.0"
+    "vitest": "^4.0.15"
   },
   "peerDependencies": {
     "@vecrea/au3te-ts-common": "^0.1.2",
