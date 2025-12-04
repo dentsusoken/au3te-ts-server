@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Federation } from './Federation';
+import { OidcFederation } from './OidcFederation';
 import { FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
 import { AuthorizationServer, getValidatedIdTokenClaims } from 'oauth4webapi';
 import {
@@ -76,7 +76,7 @@ import { createBuildAuthenticationRequestScope } from './buildAuthenticationRequ
  * const federation = new FederationImpl(config, false);
  * ```
  */
-export class FederationImpl implements Federation {
+export class OidcFederationImpl implements OidcFederation {
   #config: FederationConfig;
   #serverMetadata?: AuthorizationServer;
 

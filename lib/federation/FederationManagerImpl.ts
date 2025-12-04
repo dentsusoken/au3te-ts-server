@@ -14,10 +14,14 @@
  * language governing permissions and limitations under the
  * License.
  */
-import { FederationRegistry, FederationConfig } from '@vecrea/au3te-ts-common/schemas.federation';
+import {
+  FederationRegistry,
+  FederationConfig,
+  federationConfigSchema,
+} from '@vecrea/au3te-ts-common/schemas.federation';
 import { FederationManager } from './FederationManager';
 import { Federation } from './Federation';
-import { FederationImpl } from './FederationImpl';
+import { OidcFederationImpl } from './oidc/OidcFederationImpl';
 
 /**
  * Parameters for constructing a FederationManagerImpl instance.
@@ -36,9 +40,12 @@ export type FederationManagerImplConstructorParams = {
 export class FederationManagerImpl implements FederationManager {
   #registry: FederationRegistry;
   #federations: Map<string, Federation>;
-  #isDev: boolean;  
+  #isDev: boolean;
 
-  constructor({ registry, isDev = false }: FederationManagerImplConstructorParams) {
+  constructor({
+    registry,
+    isDev = false,
+  }: FederationManagerImplConstructorParams) {
     this.#registry = registry;
     this.#isDev = isDev;
     this.#federations = this.buildFederations();
@@ -66,18 +73,21 @@ export class FederationManagerImpl implements FederationManager {
    */
   buildFederations(): Map<string, Federation> {
     const federations = new Map<string, Federation>();
-    
+
     if (!this.#registry || !this.#registry.federations) {
       return federations;
     }
-    
+
     for (const config of this.#registry.federations) {
       if (this.isFederationConfigValid(config)) {
-        const federation = new FederationImpl(config, this.#isDev);
+        const federation =
+          config.protocol === 'oidc'
+            ? new OidcFederationImpl(config, this.#isDev)
+            : ({} as Federation); // TODO: SamlImpl
         federations.set(config.id, federation);
       }
     }
-    
+
     return federations;
   }
 
@@ -109,33 +119,10 @@ export class FederationManagerImpl implements FederationManager {
    * @param config - The federation configuration to validate
    * @returns true if the configuration is valid (OIDC protocol), false otherwise
    */
-  private isFederationConfigValid(config: FederationConfig): boolean {
-    if (!config || typeof config !== 'object') {
-      return false;
-    }
-    // Only OIDC protocol is supported
-    if (config.protocol !== 'oidc') {
-      return false;
-    }
-    if (!config.id || typeof config.id !== 'string') {
-      return false;
-    }
-    if (!config.client || typeof config.client !== 'object') {
-      return false;
-    }
-    if (!config.client.clientId || typeof config.client.clientId !== 'string') {
-      return false;
-    }
-    if (!config.client.redirectUri || typeof config.client.redirectUri !== 'string') {
-      return false;
-    }
-    if (!config.server || typeof config.server !== 'object') {
-      return false;
-    }
-    if (!config.server.issuer || typeof config.server.issuer !== 'string') {
-      return false;
-    }
-    return true;
+  private isFederationConfigValid(
+    config: FederationConfig
+  ): config is FederationConfig {
+    const { success } = federationConfigSchema.safeParse(config);
+    return success;
   }
 }
-

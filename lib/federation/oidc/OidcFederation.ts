@@ -36,7 +36,7 @@ import { ProcessFederationResponse } from './processFederationResponse';
  * const userInfo = await federation.processFederationResponse(callbackUrl, 'state-123', 'verifier');
  * ```
  */
-export interface Federation {
+export interface OidcFederation {
   /** Function to extract values from federation configuration using type-safe paths. */
   fromFederationConfig: FromFederationConfig;
   
