@@ -1,16 +1,48 @@
 import { describe, it, expect, vi } from 'vitest';
-import { FederationManagerImpl } from '../FederationManagerImpl';
+import { FederationManagerImpl } from '../../FederationManagerImpl';
 import {
   FederationRegistry,
   FederationConfig,
 } from '@vecrea/au3te-ts-common/schemas.federation';
+import * as validator from 'samlify-validator-js';
 
-// Mock FederationImpl to avoid actual initialization
-vi.mock('../FederationImpl', () => ({
-  FederationImpl: vi.fn().mockImplementation((config) => ({
+// Mock federationConfigSchema to accept both OIDC and SAML2 configurations
+vi.mock('@vecrea/au3te-ts-common/schemas.federation', async () => {
+  const actual = await vi.importActual('@vecrea/au3te-ts-common/schemas.federation');
+  return {
+    ...actual,
+    federationConfigSchema: {
+      safeParse: vi.fn((config: any) => {
+        // Accept both OIDC and SAML2 configurations
+        if (config && config.id && (config.protocol === 'oidc' || config.protocol === 'saml2')) {
+          return { success: true, data: config };
+        }
+        return { success: false, error: {} };
+      }),
+    },
+  };
+});
+
+// Mock OidcFederationImpl and Saml2FederationImpl to avoid actual initialization
+vi.mock('../oidc/OidcFederationImpl', () => ({
+  OidcFederationImpl: vi.fn().mockImplementation((config) => ({
     id: config.id,
+    type: 'oidc',
   })),
 }));
+
+vi.mock('../../saml2/Saml2FederationImpl', () => {
+  class MockSaml2FederationImpl {
+    id: string;
+    type = 'saml2';
+    constructor(config: any) {
+      this.id = config.id;
+    }
+  }
+  return {
+    Saml2FederationImpl: MockSaml2FederationImpl,
+  };
+});
 
 describe('FederationManagerImpl', () => {
   const createMockFederationConfig = (id: string): FederationConfig => ({
@@ -212,6 +244,119 @@ describe('FederationManagerImpl', () => {
       const manager = new FederationManagerImpl({ registry });
 
       expect(manager.getConfigurations()).toEqual(registry);
+    });
+  });
+
+  describe('SAML2 protocol', () => {
+    const createMockSaml2Config = (id: string): FederationConfig => ({
+      id,
+      protocol: 'saml2',
+      name: `saml2-${id}`,
+      idp: {
+        metadataUrl: 'https://idp.example.com/metadata',
+        metadata: '<EntityDescriptor>...</EntityDescriptor>',
+      },
+      sp: {
+        entityID: `https://sp-${id}.example.com`,
+        authnRequestsSigned: false,
+        wantAssertionsSigned: true,
+        wantMessageSigned: false,
+        wantLogoutResponseSigned: false,
+        wantLogoutRequestSigned: false,
+        metadata: '<EntityDescriptor>...</EntityDescriptor>',
+      },
+    } as FederationConfig);
+
+    // Given: Valid SAML2 configuration with validator
+    // When: Building federations
+    // Then: SAML2 federation is included
+    it('should build SAML2 federation when validator is provided', () => {
+      const config = createMockSaml2Config('saml2-fed1');
+      const registry: FederationRegistry = {
+        federations: [config],
+      };
+
+      const manager = new FederationManagerImpl({
+        registry,
+        validator,
+      });
+      const federations = manager.buildFederations();
+
+      expect(federations.size).toBe(1);
+      expect(federations.has('saml2-fed1')).toBe(true);
+    });
+
+    // Given: SAML2 configuration without validator
+    // When: Building federations
+    // Then: SAML2 federation is skipped
+    it('should skip SAML2 federation when validator is not provided', () => {
+      const registry: FederationRegistry = {
+        federations: [createMockSaml2Config('saml2-fed1')],
+      };
+
+      const manager = new FederationManagerImpl({ registry });
+      const federations = manager.buildFederations();
+
+      expect(federations.size).toBe(0);
+    });
+
+    // Given: Mixed OIDC and SAML2 configurations with validator
+    // When: Building federations
+    // Then: Both federations are included
+    it('should build both OIDC and SAML2 federations when validator is provided', () => {
+      const registry: FederationRegistry = {
+        federations: [
+          createMockFederationConfig('oidc-fed1'),
+          createMockSaml2Config('saml2-fed1'),
+        ],
+      };
+
+      const manager = new FederationManagerImpl({
+        registry,
+        validator,
+      });
+      const federations = manager.buildFederations();
+
+      expect(federations.size).toBe(2);
+      expect(federations.has('oidc-fed1')).toBe(true);
+      expect(federations.has('saml2-fed1')).toBe(true);
+    });
+
+    // Given: Mixed OIDC and SAML2 configurations without validator
+    // When: Building federations
+    // Then: Only OIDC federation is included
+    it('should build only OIDC federation when validator is not provided', () => {
+      const registry: FederationRegistry = {
+        federations: [
+          createMockFederationConfig('oidc-fed1'),
+          createMockSaml2Config('saml2-fed1'),
+        ],
+      };
+
+      const manager = new FederationManagerImpl({ registry });
+      const federations = manager.buildFederations();
+
+      expect(federations.size).toBe(1);
+      expect(federations.has('oidc-fed1')).toBe(true);
+      expect(federations.has('saml2-fed1')).toBe(false);
+    });
+
+    // Given: Valid SAML2 configuration with validator
+    // When: Getting federation by ID
+    // Then: Returns SAML2 federation
+    it('should return SAML2 federation by id when validator is provided', () => {
+      const registry: FederationRegistry = {
+        federations: [createMockSaml2Config('saml2-fed1')],
+      };
+
+      const manager = new FederationManagerImpl({
+        registry,
+        validator,
+      });
+      const federation = manager.getFederation('saml2-fed1');
+
+      expect(federation).toBeDefined();
+      expect(federation.type).toBe('saml2');
     });
   });
 });

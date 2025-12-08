@@ -21,7 +21,7 @@ import {
   clientSchema,
 } from '@vecrea/au3te-ts-common/schemas.common';
 import { authorizationDecisionParamsSchema } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
-import { federationCallbackParamsSchema } from '@vecrea/au3te-ts-common/schemas.federation';
+import { oidcCallbackParamsSchema } from '@vecrea/au3te-ts-common/schemas.federation';
 import { SessionSchemas } from './types';
 import { authorizationPageModelSchema } from '@vecrea/au3te-ts-common/handler.authorization-page';
 
@@ -31,7 +31,7 @@ export const defaultSessionSchemas = {
   user: userSchema,
   client: clientSchema,
   authTime: z.number(),
-  federationCallbackParams: federationCallbackParamsSchema,
+  federationCallbackParams: oidcCallbackParamsSchema,
   authorizationPageModel: authorizationPageModelSchema,
 } satisfies SessionSchemas;
 

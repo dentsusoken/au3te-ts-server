@@ -15,7 +15,6 @@
  * License.
  */
 
-
 /**
  * Configuration interface for the Federation Initiation handler.
  * Handles requests to initiate federation authentication flows.

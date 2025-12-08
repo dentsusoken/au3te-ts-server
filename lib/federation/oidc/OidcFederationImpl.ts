@@ -77,6 +77,8 @@ import { createBuildAuthenticationRequestScope } from './buildAuthenticationRequ
  * ```
  */
 export class OidcFederationImpl implements OidcFederation {
+  readonly id: string;
+  readonly type = 'oidc';
   #config: FederationConfig;
   #serverMetadata?: AuthorizationServer;
 
@@ -117,6 +119,7 @@ export class OidcFederationImpl implements OidcFederation {
         `Unsupported protocol: ${config.protocol}. Only 'oidc' protocol is supported.`
       );
     }
+    this.id = config.id;
     this.#config = config;
 
     this.fromFederationConfig = createFromFederationConfig(this.#config);
@@ -167,9 +170,8 @@ export class OidcFederationImpl implements OidcFederation {
         false
       )) ?? false;
 
-    this.buildAuthenticationRequestScope = createBuildAuthenticationRequestScope(
-      this.fromFederationConfig
-    );
+    this.buildAuthenticationRequestScope =
+      createBuildAuthenticationRequestScope(this.fromFederationConfig);
 
     this.buildAuthenticationRequest = createBuildAuthenticationRequest(
       this.authorizationEndpoint,

@@ -15,3 +15,6 @@
  */
 export * from './FederationInitiationHandlerConfiguration';
 export * from './FederationInitiationHandlerConfigurationImpl';
+export * from "./processOidcRequest"
+export * from "./processSaml2Request"
+export * from "./processRequest"

@@ -15,5 +15,4 @@
  */
 export * from './Federation';
 export * from './FederationManager';
-export * from './FederationImpl';
 export * from './FederationManagerImpl';

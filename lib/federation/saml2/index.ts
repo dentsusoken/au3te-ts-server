@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './FederationCallbackHandlerConfiguration';
-export * from './FederationCallbackHandlerConfigurationImpl';
-export * from './processRequest';
-export * from "./processOidcRequest"
-export * from "./processSaml2Request"
+export * from './processLoginRequest';
+export * from './processSaml2Response';
+export * from './Saml2Configuration';
+export * from './Saml2ConfigurationImpl';
+export * from './Saml2Federation';
+export * from './Saml2FederationImpl';

@@ -2,21 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProcessRequest } from '../processRequest';
 import { ExtractPathParameter } from '@/extractor/extractPathParameter';
 import { FederationManager } from '@/federation/FederationManager';
-import { DefaultSessionSchemas, Session } from '@/session';
-import { ResponseErrorFactory, ResponseFactory } from '../../core';
+import { ResponseErrorFactory } from '../../core';
+import { ProcessOidcRequest } from '../processOidcRequest';
+import { ProcessSaml2Request } from '../processSaml2Request';
 
 describe('createProcessRequest (federation-initiation)', () => {
   const createMockDependencies = () => {
-    const mockSession = {
-      get: vi.fn(),
-      getBatch: vi.fn(),
-      set: vi.fn(),
-      setBatch: vi.fn(),
-      delete: vi.fn(),
-      deleteBatch: vi.fn(),
-      clear: vi.fn(),
-    } as unknown as Session<DefaultSessionSchemas>;
-
     const mockExtractPathParameter: ExtractPathParameter = vi.fn(
       (request: Request, pattern: string) => {
         const url = new URL(request.url);
@@ -33,20 +24,23 @@ describe('createProcessRequest (federation-initiation)', () => {
       }
     );
 
-    const mockFederation = {
-      createFederationRequest: vi
-        .fn()
-        .mockResolvedValue(
-          new URL(
-            'https://auth-server.com/auth?state=test-state&code_challenge=challenge'
-          )
-        ),
+    const mockOidcFederation = {
+      id: 'test-oidc-federation',
+      type: 'oidc' as const,
+    };
+
+    const mockSaml2Federation = {
+      id: 'test-saml2-federation',
+      type: 'saml2' as const,
     };
 
     const mockFederationManager = {
       getFederation: vi.fn((id: string) => {
-        if (id === 'test-federation') {
-          return mockFederation;
+        if (id === 'test-oidc-federation') {
+          return mockOidcFederation;
+        }
+        if (id === 'test-saml2-federation') {
+          return mockSaml2Federation;
         }
         throw new Error(`Federation with ID '${id}' not found`);
       }),
@@ -56,31 +50,24 @@ describe('createProcessRequest (federation-initiation)', () => {
       notFoundResponseError: vi.fn((message: string) => ({
         response: new Response(message, { status: 404 }),
       })),
-      badRequestResponseError: vi.fn((message: string) => ({
-        response: new Response(message, { status: 400 }),
-      })),
-      internalServerErrorResponseError: vi.fn((message: string) => ({
-        response: new Response(message, { status: 500 }),
-      })),
     } as unknown as ResponseErrorFactory;
 
-    const mockResponseFactory: ResponseFactory = {
-      location: vi.fn(
-        (url: string) =>
-          new Response(null, {
-            status: 302,
-            headers: { Location: url },
-          })
-      ),
-    } as unknown as ResponseFactory;
+    const mockProcessOidcRequest: ProcessOidcRequest = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 302 }));
+
+    const mockProcessSaml2Request: ProcessSaml2Request = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 302 }));
 
     return {
-      mockSession,
       mockExtractPathParameter,
       mockFederationManager,
-      mockFederation,
       mockResponseErrorFactory,
-      mockResponseFactory,
+      mockProcessOidcRequest,
+      mockProcessSaml2Request,
+      mockOidcFederation,
+      mockSaml2Federation,
     };
   };
 
@@ -88,190 +75,121 @@ describe('createProcessRequest (federation-initiation)', () => {
     vi.clearAllMocks();
   });
 
-  it('should process request and redirect to authentication endpoint', async () => {
-    const {
-      mockSession,
-      mockExtractPathParameter,
-      mockFederationManager,
-      mockFederation,
-      mockResponseErrorFactory,
-      mockResponseFactory,
-    } = createMockDependencies();
+  describe('OIDC federation', () => {
+    // Given: Request with OIDC federation ID
+    // When: Processing request
+    // Then: Calls processOidcRequest
+    it('should call processOidcRequest for OIDC federation', async () => {
+      const {
+        mockExtractPathParameter,
+        mockFederationManager,
+        mockResponseErrorFactory,
+        mockProcessOidcRequest,
+        mockProcessSaml2Request,
+        mockOidcFederation,
+      } = createMockDependencies();
 
-    const processRequest = createProcessRequest({
-      path: '/api/federation/initiation/:federationId',
-      extractPathParameter: mockExtractPathParameter,
-      federationManager: mockFederationManager,
-      responseErrorFactory: mockResponseErrorFactory,
-      session: mockSession,
-      responseFactory: mockResponseFactory,
+      const processRequest = createProcessRequest({
+        path: '/api/federation/initiation/:federationId',
+        extractPathParameter: mockExtractPathParameter,
+        federationManager: mockFederationManager,
+        responseErrorFactory: mockResponseErrorFactory,
+        processOidcRequest: mockProcessOidcRequest,
+        processSaml2Request: mockProcessSaml2Request,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/initiation/test-oidc-federation'
+      );
+      const response = await processRequest(request);
+
+      expect(mockExtractPathParameter).toHaveBeenCalledWith(
+        request,
+        '/api/federation/initiation/:federationId'
+      );
+      expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
+        'test-oidc-federation'
+      );
+      expect(mockProcessOidcRequest).toHaveBeenCalledWith(mockOidcFederation);
+      expect(mockProcessSaml2Request).not.toHaveBeenCalled();
+      expect(response.status).toBe(302);
     });
-
-    const request = new Request(
-      'https://example.com/api/federation/initiation/test-federation'
-    );
-
-    const response = await processRequest(request);
-
-    expect(mockExtractPathParameter).toHaveBeenCalledWith(
-      request,
-      '/api/federation/initiation/:federationId'
-    );
-    expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
-      'test-federation'
-    );
-    expect(mockSession.set).toHaveBeenCalledWith(
-      'federationCallbackParams',
-      expect.objectContaining({
-        state: expect.any(String),
-        codeVerifier: expect.any(String),
-      })
-    );
-    expect(mockFederation.createFederationRequest).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.any(String)
-    );
-    expect(mockResponseFactory.location).toHaveBeenCalledWith(
-      'https://auth-server.com/auth?state=test-state&code_challenge=challenge'
-    );
-    expect(response.status).toBe(302);
-    expect(response.headers.get('Location')).toBe(
-      'https://auth-server.com/auth?state=test-state&code_challenge=challenge'
-    );
   });
 
-  it('should generate random state and codeVerifier', async () => {
-    const {
-      mockSession,
-      mockExtractPathParameter,
-      mockFederationManager,
-      mockResponseErrorFactory,
-      mockResponseFactory,
-    } = createMockDependencies();
+  describe('SAML2 federation', () => {
+    // Given: Request with SAML2 federation ID
+    // When: Processing request
+    // Then: Calls processSaml2Request
+    it('should call processSaml2Request for SAML2 federation', async () => {
+      const {
+        mockExtractPathParameter,
+        mockFederationManager,
+        mockResponseErrorFactory,
+        mockProcessOidcRequest,
+        mockProcessSaml2Request,
+        mockSaml2Federation,
+      } = createMockDependencies();
 
-    const processRequest = createProcessRequest({
-      path: '/api/federation/initiation/:federationId',
-      extractPathParameter: mockExtractPathParameter,
-      federationManager: mockFederationManager,
-      responseErrorFactory: mockResponseErrorFactory,
-      session: mockSession,
-      responseFactory: mockResponseFactory,
+      const processRequest = createProcessRequest({
+        path: '/api/federation/initiation/:federationId',
+        extractPathParameter: mockExtractPathParameter,
+        federationManager: mockFederationManager,
+        responseErrorFactory: mockResponseErrorFactory,
+        processOidcRequest: mockProcessOidcRequest,
+        processSaml2Request: mockProcessSaml2Request,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/initiation/test-saml2-federation'
+      );
+      const response = await processRequest(request);
+
+      expect(mockExtractPathParameter).toHaveBeenCalledWith(
+        request,
+        '/api/federation/initiation/:federationId'
+      );
+      expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
+        'test-saml2-federation'
+      );
+      expect(mockProcessSaml2Request).toHaveBeenCalledWith(mockSaml2Federation);
+      expect(mockProcessOidcRequest).not.toHaveBeenCalled();
+      expect(response.status).toBe(302);
     });
-
-    const request = new Request(
-      'https://example.com/api/federation/initiation/test-federation'
-    );
-
-    await processRequest(request);
-
-    const setCall = (mockSession.set as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call) => call[0] === 'federationCallbackParams'
-    );
-    expect(setCall).toBeDefined();
-    const federationCallbackParams = setCall?.[1];
-    expect(federationCallbackParams.state).toBeDefined();
-    expect(federationCallbackParams.codeVerifier).toBeDefined();
-    expect(typeof federationCallbackParams.state).toBe('string');
-    expect(typeof federationCallbackParams.codeVerifier).toBe('string');
-    expect(federationCallbackParams.state.length).toBeGreaterThan(0);
-    expect(federationCallbackParams.codeVerifier.length).toBeGreaterThan(0);
   });
 
-  it('should return 404 for unknown federation ID', async () => {
-    const {
-      mockSession,
-      mockExtractPathParameter,
-      mockFederationManager,
-      mockResponseErrorFactory,
-      mockResponseFactory,
-    } = createMockDependencies();
+  describe('error handling', () => {
+    // Given: Unknown federation ID
+    // When: Processing request
+    // Then: Returns 404 error
+    it('should return 404 for unknown federation ID', async () => {
+      const {
+        mockExtractPathParameter,
+        mockFederationManager,
+        mockResponseErrorFactory,
+        mockProcessOidcRequest,
+        mockProcessSaml2Request,
+      } = createMockDependencies();
 
-    const processRequest = createProcessRequest({
-      path: '/api/federation/initiation/:federationId',
-      extractPathParameter: mockExtractPathParameter,
-      federationManager: mockFederationManager,
-      responseErrorFactory: mockResponseErrorFactory,
-      session: mockSession,
-      responseFactory: mockResponseFactory,
+      const processRequest = createProcessRequest({
+        path: '/api/federation/initiation/:federationId',
+        extractPathParameter: mockExtractPathParameter,
+        federationManager: mockFederationManager,
+        responseErrorFactory: mockResponseErrorFactory,
+        processOidcRequest: mockProcessOidcRequest,
+        processSaml2Request: mockProcessSaml2Request,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/initiation/unknown-federation'
+      );
+      const response = await processRequest(request);
+
+      expect(response.status).toBe(404);
+      expect(mockResponseErrorFactory.notFoundResponseError).toHaveBeenCalledWith(
+        "Federation with ID 'unknown-federation' not found"
+      );
+      expect(mockProcessOidcRequest).not.toHaveBeenCalled();
+      expect(mockProcessSaml2Request).not.toHaveBeenCalled();
     });
-
-    const request = new Request(
-      'https://example.com/api/federation/initiation/unknown-federation'
-    );
-
-    const response = await processRequest(request);
-
-    expect(response.status).toBe(404);
-    expect(mockResponseErrorFactory.notFoundResponseError).toHaveBeenCalledWith(
-      "Federation with ID 'unknown-federation' not found"
-    );
-    expect(mockSession.set).not.toHaveBeenCalled();
-    expect(mockResponseFactory.location).not.toHaveBeenCalled();
-  });
-
-  it('should pass generated state and codeVerifier to createFederationRequest', async () => {
-    const {
-      mockSession,
-      mockExtractPathParameter,
-      mockFederationManager,
-      mockFederation,
-      mockResponseErrorFactory,
-      mockResponseFactory,
-    } = createMockDependencies();
-
-    const processRequest = createProcessRequest({
-      path: '/api/federation/initiation/:federationId',
-      extractPathParameter: mockExtractPathParameter,
-      federationManager: mockFederationManager,
-      responseErrorFactory: mockResponseErrorFactory,
-      session: mockSession,
-      responseFactory: mockResponseFactory,
-    });
-
-    const request = new Request(
-      'https://example.com/api/federation/initiation/test-federation'
-    );
-
-    await processRequest(request);
-
-    const setCall = (mockSession.set as ReturnType<typeof vi.fn>).mock.calls.find(
-      (call) => call[0] === 'federationCallbackParams'
-    );
-    const federationCallbackParams = setCall?.[1];
-    const { state, codeVerifier } = federationCallbackParams;
-
-    expect(mockFederation.createFederationRequest).toHaveBeenCalledWith(
-      state,
-      codeVerifier
-    );
-  });
-
-  it('should throw error when extractPathParameter fails', async () => {
-    const {
-      mockSession,
-      mockExtractPathParameter,
-      mockFederationManager,
-      mockResponseErrorFactory,
-      mockResponseFactory,
-    } = createMockDependencies();
-
-    (mockExtractPathParameter as ReturnType<typeof vi.fn>).mockImplementation(() => {
-      throw new Error('Unexpected error');
-    });
-
-    const processRequest = createProcessRequest({
-      path: '/api/federation/initiation/:federationId',
-      extractPathParameter: mockExtractPathParameter,
-      federationManager: mockFederationManager,
-      responseErrorFactory: mockResponseErrorFactory,
-      session: mockSession,
-      responseFactory: mockResponseFactory,
-    });
-
-    const request = new Request(
-      'https://example.com/api/federation/initiation/test-federation'
-    );
-
-    await expect(processRequest(request)).rejects.toThrow('Unexpected error');
   });
 });

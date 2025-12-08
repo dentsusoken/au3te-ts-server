@@ -13,8 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './FederationCallbackHandlerConfiguration';
-export * from './FederationCallbackHandlerConfigurationImpl';
-export * from './processRequest';
-export * from "./processOidcRequest"
-export * from "./processSaml2Request"
+export * from './buildAuthenticationRequest';
+export * from './buildAuthenticationRequestScope';
+export * from './createFederationRequest';
+export * from './extractAuthorizationCode';
+export * from './fromFederationConfig';
+export * from './fromServerMetadata';
+export * from './getServerMetadata';
+export * from './makeTokenRequest';
+export * from './makeUserInfoRequest';
+export * from './OidcFederation';
+export * from './OidcFederationImpl';
+export * from './processFederationResponse';
+export * from './validateIdToken';

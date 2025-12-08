@@ -62,6 +62,8 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     };
 
     const mockFederation = {
+      type: 'oidc' as const,
+      id: 'test-federation',
       processFederationResponse: vi.fn().mockResolvedValue(mockUserInfo),
     };
 
@@ -174,7 +176,8 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     const {
       mockServerHandlerConfiguration,
       mockExtractorConfiguration,
-      mockFederationManager,mockUserHandler
+      mockFederationManager,
+      mockUserHandler,
     } = createMockDependencies();
 
     const config = new FederationCallbackHandlerConfigurationImpl({
@@ -340,5 +343,157 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
     const response = await config.processRequest(request);
 
     expect(response.status).toBe(400);
+  });
+
+  describe('SAML2 protocol', () => {
+    // Given: Valid SAML2 federation and session with authorizationPageModel
+    // When: Processing SAML2 callback request
+    // Then: Returns authorization page with user info
+    it('should process SAML2 request and return authorization page', async () => {
+      const {
+        mockServerHandlerConfiguration,
+        mockExtractorConfiguration,
+        mockFederationManager,
+        mockSession,
+        mockUserHandler,
+      } = createMockDependencies();
+
+      const mockSaml2Federation = {
+        type: 'saml2' as const,
+        id: 'test-saml2-federation',
+        processSaml2Response: vi.fn().mockResolvedValue({
+          nameID: 'user123',
+        }),
+      };
+
+      (mockFederationManager.getFederation as ReturnType<
+        typeof vi.fn
+      >).mockReturnValue(mockSaml2Federation);
+
+      mockSession.get.mockImplementation((key: string) => {
+        if (key === 'authorizationPageModel') {
+          return Promise.resolve({
+            user: null,
+          });
+        }
+        return Promise.resolve(null);
+      });
+
+      const config = new FederationCallbackHandlerConfigurationImpl({
+        serverHandlerConfiguration: mockServerHandlerConfiguration,
+        extractorConfiguration: mockExtractorConfiguration,
+        federationManager: mockFederationManager,
+        userHandler: mockUserHandler,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/callback/test-saml2-federation'
+      );
+
+      const response = await config.processRequest(request);
+
+      expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
+        'test-saml2-federation'
+      );
+      expect(mockSaml2Federation.processSaml2Response).toHaveBeenCalledWith(
+        request
+      );
+      expect(mockSession.setBatch).toHaveBeenCalledWith({
+        user: expect.objectContaining({
+          subject: 'user123@test-saml2-federation',
+        }),
+        authTime: expect.any(Number),
+      });
+      expect(response.status).toBe(200);
+    });
+
+    // Given: SAML2 federation but authorizationPageModel not found
+    // When: Processing SAML2 callback request
+    // Then: Returns 400 error
+    it('should return 400 when authorizationPageModel not found for SAML2', async () => {
+      const {
+        mockServerHandlerConfiguration,
+        mockExtractorConfiguration,
+        mockFederationManager,
+        mockSession,
+        mockUserHandler,
+      } = createMockDependencies();
+
+      const mockSaml2Federation = {
+        type: 'saml2' as const,
+        id: 'test-saml2-federation',
+        processSaml2Response: vi.fn(),
+      };
+
+      (mockFederationManager.getFederation as ReturnType<
+        typeof vi.fn
+      >).mockReturnValue(mockSaml2Federation);
+
+      mockSession.get.mockResolvedValue(null);
+
+      const config = new FederationCallbackHandlerConfigurationImpl({
+        serverHandlerConfiguration: mockServerHandlerConfiguration,
+        extractorConfiguration: mockExtractorConfiguration,
+        federationManager: mockFederationManager,
+        userHandler: mockUserHandler,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/callback/test-saml2-federation'
+      );
+
+      const response = await config.processRequest(request);
+
+      expect(response.status).toBe(400);
+    });
+
+    // Given: SAML2 federation response processing fails
+    // When: Processing SAML2 callback request
+    // Then: Returns 400 error
+    it('should return 400 when SAML2 response processing fails', async () => {
+      const {
+        mockServerHandlerConfiguration,
+        mockExtractorConfiguration,
+        mockFederationManager,
+        mockSession,
+        mockUserHandler,
+      } = createMockDependencies();
+
+      const mockSaml2Federation = {
+        type: 'saml2' as const,
+        id: 'test-saml2-federation',
+        processSaml2Response: vi
+          .fn()
+          .mockRejectedValue(new Error('SAML2 processing error')),
+      };
+
+      (mockFederationManager.getFederation as ReturnType<
+        typeof vi.fn
+      >).mockReturnValue(mockSaml2Federation);
+
+      mockSession.get.mockImplementation((key: string) => {
+        if (key === 'authorizationPageModel') {
+          return Promise.resolve({
+            user: null,
+          });
+        }
+        return Promise.resolve(null);
+      });
+
+      const config = new FederationCallbackHandlerConfigurationImpl({
+        serverHandlerConfiguration: mockServerHandlerConfiguration,
+        extractorConfiguration: mockExtractorConfiguration,
+        federationManager: mockFederationManager,
+        userHandler: mockUserHandler,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/callback/test-saml2-federation'
+      );
+
+      const response = await config.processRequest(request);
+
+      expect(response.status).toBe(400);
+    });
   });
 });

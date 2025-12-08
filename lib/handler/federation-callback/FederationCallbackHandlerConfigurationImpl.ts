@@ -14,27 +14,36 @@
  * language governing permissions and limitations under the
  * License.
  */
-import { ServerHandlerConfiguration } from '../core';
-import { FederationManager } from '@/federation';
 import { ExtractorConfiguration } from '@/extractor';
-import { FederationCallbackHandlerConfiguration } from './FederationCallbackHandlerConfiguration';
-import {
-  createProcessRequest,
-  CreateProcessRequestParams,
-  ProcessRequest,
-} from './processRequest';
+import { FederationManager } from '@/federation';
 import { DefaultSessionSchemas } from '@/session';
 import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
+import { ServerHandlerConfiguration } from '../core';
+import { FederationCallbackHandlerConfiguration } from './FederationCallbackHandlerConfiguration';
+import {
+  createProcessOidcRequest,
+  CreateProcessOidcRequestParams,
+  ProcessOidcRequest,
+} from './processOidcRequest';
+import { createProcessRequest } from './processRequest';
+import {
+  CreateProcessSaml2RequestParams,
+  createProcessSaml2Request,
+  ProcessSaml2Request,
+} from './processSaml2Request';
 
 export type FederationCallbackHandlerConfigurationImplOverrides<
   SS extends DefaultSessionSchemas,
   U extends User,
   T extends keyof Omit<U, 'loginId' | 'password'> = never
 > = {
-  createProcessRequest: (
-    params: CreateProcessRequestParams<SS, U, T>
-  ) => ProcessRequest;
+  createProcessOidcRequest?: (
+    params: CreateProcessOidcRequestParams<SS, U, T>
+  ) => ProcessOidcRequest;
+  createProcessSaml2Request?: (
+    params: CreateProcessSaml2RequestParams<SS, U, T>
+  ) => ProcessSaml2Request;
 };
 
 export type FederationCallbackHandlerConfigurationImplConstructorParams<
@@ -89,15 +98,29 @@ export class FederationCallbackHandlerConfigurationImpl<
       overrides ??
       ({} as FederationCallbackHandlerConfigurationImplOverrides<SS, U, T>);
 
-    this.processRequest = (
-      resolvedOverrides.createProcessRequest ?? createProcessRequest<SS, U>
+    const processOidcRequest = (
+      resolvedOverrides.createProcessOidcRequest ?? createProcessOidcRequest
     )({
+      responseErrorFactory,
+      session,
+      userHandler,
+    });
+
+    const processSaml2Request = (
+      resolvedOverrides.createProcessSaml2Request ?? createProcessSaml2Request
+    )({
+      responseErrorFactory,
+      session,
+      userHandler,
+    });
+
+    this.processRequest = createProcessRequest({
       path: this.path,
       extractPathParameter,
       federationManager,
       responseErrorFactory,
-      session,
-      userHandler,
+      processOidcRequest,
+      processSaml2Request,
     });
   }
 }

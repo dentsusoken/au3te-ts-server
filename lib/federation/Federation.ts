@@ -15,5 +15,6 @@
  * License.
  */
 import { OidcFederation } from './oidc/OidcFederation';
+import { Saml2Federation } from './saml2/Saml2Federation';
 
-export type Federation = OidcFederation;
+export type Federation = OidcFederation | Saml2Federation;

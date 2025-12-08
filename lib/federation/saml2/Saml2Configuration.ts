@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './FederationCallbackHandlerConfiguration';
-export * from './FederationCallbackHandlerConfigurationImpl';
-export * from './processRequest';
-export * from "./processOidcRequest"
-export * from "./processSaml2Request"
+import * as samlify from 'samlify';
+
+export interface Saml2Configuration {
+    getIdp(): Promise<samlify.IdentityProviderInstance>;
+    getSp(): Promise<samlify.ServiceProviderInstance>;
+}

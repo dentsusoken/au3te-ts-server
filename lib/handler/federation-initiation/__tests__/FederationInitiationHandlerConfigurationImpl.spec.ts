@@ -26,6 +26,12 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
             headers: { Location: url },
           })
         ),
+        html: vi.fn((html: string) =>
+          new Response(html, {
+            status: 200,
+            headers: { 'Content-Type': 'text/html' },
+          })
+        ),
       },
       responseErrorFactory: {
         notFoundResponseError: vi.fn((message: string) => ({
@@ -52,9 +58,14 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
     } as unknown as ExtractorConfiguration;
 
     const mockFederation = {
+      type: 'oidc' as const,
       createFederationRequest: vi.fn().mockResolvedValue(
         new URL('https://auth-server.com/auth?state=test-state&code_challenge=challenge')
       ),
+      processLoginRequest: vi.fn().mockResolvedValue({
+        type: 'redirect' as const,
+        location: 'https://auth-server.com/auth',
+      }),
     };
 
     const mockFederationManager = {
@@ -165,11 +176,99 @@ describe('FederationInitiationHandlerConfigurationImpl', () => {
       (call) => call[0] === 'federationCallbackParams'
     );
     expect(setCall).toBeDefined();
-    const federationCallbackParams = setCall[1];
+    const federationCallbackParams = setCall![1];
     expect(federationCallbackParams.state).toBeDefined();
     expect(federationCallbackParams.codeVerifier).toBeDefined();
     expect(typeof federationCallbackParams.state).toBe('string');
     expect(typeof federationCallbackParams.codeVerifier).toBe('string');
+  });
+
+  describe('SAML2 protocol', () => {
+    // Given: Valid SAML2 federation with redirect login request
+    // When: Processing SAML2 initiation request
+    // Then: Returns redirect response
+    it('should process SAML2 initiation request and return redirect', async () => {
+      const {
+        mockServerHandlerConfiguration,
+        mockExtractorConfiguration,
+        mockFederationManager,
+      } = createMockDependencies();
+
+      const mockSaml2Federation = {
+        type: 'saml2' as const,
+        id: 'test-saml2-federation',
+        processLoginRequest: vi.fn().mockResolvedValue({
+          type: 'redirect' as const,
+          location: 'https://idp.example.com/login',
+        }),
+      };
+
+      (mockFederationManager.getFederation as ReturnType<
+        typeof vi.fn
+      >).mockReturnValue(mockSaml2Federation);
+
+      const config = new FederationInitiationHandlerConfigurationImpl({
+        serverHandlerConfiguration: mockServerHandlerConfiguration,
+        extractorConfiguration: mockExtractorConfiguration,
+        federationManager: mockFederationManager,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/initiation/test-saml2-federation'
+      );
+
+      const response = await config.processRequest(request);
+
+      expect(mockFederationManager.getFederation).toHaveBeenCalledWith(
+        'test-saml2-federation'
+      );
+      expect(mockSaml2Federation.processLoginRequest).toHaveBeenCalled();
+      expect(response.status).toBe(302);
+      expect(response.headers.get('Location')).toBe(
+        'https://idp.example.com/login'
+      );
+    });
+
+    // Given: Valid SAML2 federation with POST login request
+    // When: Processing SAML2 initiation request
+    // Then: Returns HTML response
+    it('should process SAML2 initiation request and return HTML for POST', async () => {
+      const {
+        mockServerHandlerConfiguration,
+        mockExtractorConfiguration,
+        mockFederationManager,
+      } = createMockDependencies();
+
+      const mockHtml = '<html><body>...</body></html>';
+      const mockSaml2Federation = {
+        type: 'saml2' as const,
+        id: 'test-saml2-federation',
+        processLoginRequest: vi.fn().mockResolvedValue({
+          type: 'post' as const,
+          html: mockHtml,
+        }),
+      };
+
+      (mockFederationManager.getFederation as ReturnType<
+        typeof vi.fn
+      >).mockReturnValue(mockSaml2Federation);
+
+      const config = new FederationInitiationHandlerConfigurationImpl({
+        serverHandlerConfiguration: mockServerHandlerConfiguration,
+        extractorConfiguration: mockExtractorConfiguration,
+        federationManager: mockFederationManager,
+      });
+
+      const request = new Request(
+        'https://example.com/api/federation/initiation/test-saml2-federation'
+      );
+
+      const response = await config.processRequest(request);
+
+      expect(mockSaml2Federation.processLoginRequest).toHaveBeenCalled();
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Content-Type')).toBe('text/html');
+    });
   });
 });
 

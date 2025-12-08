@@ -22,6 +22,8 @@ import {
 import { FederationManager } from './FederationManager';
 import { Federation } from './Federation';
 import { OidcFederationImpl } from './oidc/OidcFederationImpl';
+import { Saml2FederationImpl } from './saml2/Saml2FederationImpl';
+import { SamlifyValidator } from './saml2/Saml2ConfigurationImpl';
 
 /**
  * Parameters for constructing a FederationManagerImpl instance.
@@ -31,6 +33,8 @@ export type FederationManagerImplConstructorParams = {
   registry: FederationRegistry;
   /** Whether running in development mode. Defaults to false. */
   isDev?: boolean;
+
+  validator?: SamlifyValidator;
 };
 
 /**
@@ -41,13 +45,16 @@ export class FederationManagerImpl implements FederationManager {
   #registry: FederationRegistry;
   #federations: Map<string, Federation>;
   #isDev: boolean;
+  #validator;
 
   constructor({
     registry,
     isDev = false,
+    validator,
   }: FederationManagerImplConstructorParams) {
     this.#registry = registry;
     this.#isDev = isDev;
+    this.#validator = validator;
     this.#federations = this.buildFederations();
   }
 
@@ -80,10 +87,14 @@ export class FederationManagerImpl implements FederationManager {
 
     for (const config of this.#registry.federations) {
       if (this.isFederationConfigValid(config)) {
-        const federation =
-          config.protocol === 'oidc'
-            ? new OidcFederationImpl(config, this.#isDev)
-            : ({} as Federation); // TODO: SamlImpl
+        let federation;
+        if (config.protocol === 'oidc') {
+          federation = new OidcFederationImpl(config, this.#isDev);
+        } else if (config.protocol === 'saml2' && this.#validator) {
+          federation = new Saml2FederationImpl(config, this.#validator);
+        } else {
+          continue;
+        }
         federations.set(config.id, federation);
       }
     }

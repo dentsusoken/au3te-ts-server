@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './FederationCallbackHandlerConfiguration';
-export * from './FederationCallbackHandlerConfigurationImpl';
-export * from './processRequest';
-export * from "./processOidcRequest"
-export * from "./processSaml2Request"
+import { ProcessLoginRequest } from './processLoginRequest';
+import { ProcessSaml2Response } from './processSaml2Response';
+
+export interface Saml2Federation {
+  readonly id: string;
+  readonly type: 'saml2';
+  processLoginRequest: ProcessLoginRequest;
+  processSaml2Response: ProcessSaml2Response;
+}

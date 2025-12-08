@@ -21,6 +21,8 @@ import { ExtractorConfiguration } from '@/extractor';
 import { FederationInitiationHandlerConfiguration } from './FederationInitiationHandlerConfiguration';
 import { createProcessRequest } from './processRequest';
 import { DefaultSessionSchemas } from '@/session';
+import { createProcessOidcRequest } from './processOidcRequest';
+import { createProcessSaml2Request } from './processSaml2Request';
 
 export type FederationInitiationHandlerConfigurationImplConstructorParams<
   SS extends DefaultSessionSchemas
@@ -61,13 +63,22 @@ export class FederationInitiationHandlerConfigurationImpl<
 
     const { extractPathParameter } = extractorConfiguration;
 
+    const processOidcRequest = createProcessOidcRequest({
+      session,
+      responseFactory,
+    });
+
+    const processSaml2Request = createProcessSaml2Request({
+      responseFactory,
+    });
+
     this.processRequest = createProcessRequest({
       path: this.path,
       extractPathParameter,
       federationManager,
       responseErrorFactory,
-      session,
-      responseFactory,
+      processOidcRequest,
+      processSaml2Request,
     });
   }
 }

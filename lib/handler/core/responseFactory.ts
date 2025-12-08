@@ -52,6 +52,11 @@ export interface ResponseFactory {
   ok(body?: string | null, headers?: Headers): Response;
 
   /**
+   * Creates a 200 OK response.
+   */
+  html(body?: string | null, headers?: Headers): Response;
+
+  /**
    * Creates a 200 OK response with JWT content type.
    */
   okJwt(body?: string | null, headers?: Headers): Response;
@@ -147,6 +152,14 @@ export const defaultResponseFactory: ResponseFactory = {
     defaultResponseFactory.createResponse(
       HttpStatus.OK,
       MediaType.APPLICATION_JSON_UTF8,
+      body,
+      headers
+    ),
+
+  html: (body?: string | null, headers?: Headers) =>
+    defaultResponseFactory.createResponse(
+      HttpStatus.OK,
+      MediaType.TEXT_HTML_UTF8,
       body,
       headers
     ),
