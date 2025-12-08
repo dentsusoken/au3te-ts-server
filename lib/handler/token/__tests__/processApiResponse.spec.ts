@@ -45,6 +45,16 @@ describe('createProcessApiResponse', () => {
   // Reset all mocks before each test
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock responseFactory methods to return Response objects
+    (defaultResponseFactory.badRequest as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "bad_request"}', { status: 400 })
+    );
+    (defaultResponseFactory.unauthorized as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "unauthorized"}', { status: 401 })
+    );
+    (defaultResponseFactory.internalServerError as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "internal_server_error"}', { status: 500 })
+    );
   });
 
   // Test successful token response

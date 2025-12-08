@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProcessApiResponse } from '../processApiResponse';
 import { defaultResponseFactory } from '@/handler/core/responseFactory';
 import { createResponseErrorFactory } from '@/handler/core/responseErrorFactory';
@@ -22,6 +22,23 @@ vi.mock('@/handler/core/responseFactory', () => ({
 }));
 
 describe('createProcessApiResponse', () => {
+  // Reset all mocks before each test
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Mock responseFactory methods to return Response objects
+    (defaultResponseFactory.badRequest as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "bad_request"}', { status: 400 })
+    );
+    (defaultResponseFactory.unauthorized as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "unauthorized"}', { status: 401 })
+    );
+    (defaultResponseFactory.forbidden as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "forbidden"}', { status: 403 })
+    );
+    (defaultResponseFactory.internalServerError as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Response('{"error": "internal_server_error"}', { status: 500 })
+    );
+  });
   // Mock functions
   const mockBuildUnknownActionMessage = vi.fn();
 
