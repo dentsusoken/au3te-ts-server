@@ -139,7 +139,8 @@
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
-    "prepublishOnly": "npm test && npm run build"
+    "prepublishOnly": "npm test && npm run build",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
@@ -151,7 +152,7 @@
     "vitest": "^4.0.15"
   },
   "peerDependencies": {
-    "@vecrea/au3te-ts-common": "^0.1.2",
+    "@vecrea/au3te-ts-common": "github:dentsusoken/au3te-ts-common#saml-demo",
     "@vecrea/oid4vc-core": "^0.1.0",
     "u8a-utils": "^1.0.12",
     "zod": "^3.23.8"
