@@ -21,7 +21,6 @@ import { CheckAuthAge } from './checkAuthAge';
 import { ClearCurrentUserInfoInSession } from './clearCurrentUserInfoInSession';
 import { Session } from '../../session/Session';
 import { SessionSchemas } from '../../session/types';
-import { sessionSchemas } from '../../session/sessionSchemas';
 
 /**
  * Type definition for a function that clears current user information from the session if necessary.
@@ -38,7 +37,7 @@ export type ClearCurrentUserInfoInSessionIfNecessary<
  * Parameters for creating a ClearCurrentUserInfoInSessionIfNecessary function
  * @template SS - The type of SessionSchemas
  */
-type CreateClearCurrentUserInfoInSessionIfNecessaryParams<
+export type CreateClearCurrentUserInfoInSessionIfNecessaryParams<
   SS extends SessionSchemas
 > = {
   /** Function to check prompts */
@@ -56,18 +55,18 @@ type CreateClearCurrentUserInfoInSessionIfNecessaryParams<
  * @returns {ClearCurrentUserInfoInSessionIfNecessary<SS>} A function that clears current user information if necessary
  */
 export const createClearCurrentUserInfoInSessionIfNecessary =
-  <SS extends SessionSchemas = typeof sessionSchemas>({
+  <SS extends SessionSchemas>({
     checkPrompts,
     checkAuthAge,
     clearCurrentUserInfoInSession,
   }: CreateClearCurrentUserInfoInSessionIfNecessaryParams<SS>): ClearCurrentUserInfoInSessionIfNecessary<SS> =>
   async (response, session) => {
     const authTime = (await session.get('authTime')) ?? 0;
-    const shouldClearCurrentUserInfoInSession =
+    const shouldClear =
       checkPrompts(response.prompts) ||
       checkAuthAge(authTime, response.maxAge ?? undefined);
 
-    if (shouldClearCurrentUserInfoInSession) {
+    if (shouldClear) {
       await clearCurrentUserInfoInSession(session);
     }
   };

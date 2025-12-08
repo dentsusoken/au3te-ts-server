@@ -38,7 +38,7 @@ import { ToApiRequest } from '../core/toApiRequest';
 import { ProcessRequest } from '../core/processRequest';
 import { defaultToApiRequest } from './toApiRequest';
 import { createProcessRequest } from '../core/processRequest';
-import { sessionSchemas } from '@/session/sessionSchemas';
+import { defaultSessionSchemas } from '@/session/sessionSchemas';
 
 /** The path for the credential metadata endpoint */
 export const CREDENTIAL_METADATA_PATH = '/.well-known/openid-credential-issuer';
@@ -48,7 +48,7 @@ export const CREDENTIAL_METADATA_PATH = '/.well-known/openid-credential-issuer';
  * This class configures the handling of credential metadata requests.
  */
 export class CredentialMetadataHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
+  SS extends SessionSchemas = typeof defaultSessionSchemas
 > implements CredentialMetadataHandlerConfiguration
 {
   /** The path for the credential metadata endpoint. */

@@ -29,9 +29,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     };
 
     await expect(validateApiResponse(response)).rejects.toThrow(
-      responseErrorFactory.internalServerErrorResponseError(
-        'Options are required'
-      )
+      expect.objectContaining({
+        message: 'Options are required',
+        response: expect.any(Response),
+      })
     );
   });
 
@@ -53,7 +54,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     };
 
     await expect(validateApiResponse(response, options)).rejects.toThrow(
-      responseErrorFactory.badRequestResponseError('Invalid request', headers)
+      expect.objectContaining({
+        message: 'Invalid request',
+        response: expect.any(Response),
+      })
     );
   });
 
@@ -64,11 +68,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     };
 
     await expect(validateApiResponse(response, options)).rejects.toThrow(
-      responseErrorFactory.unauthorizedResponseError(
-        accessToken,
-        'Unauthorized access',
-        headers
-      )
+      expect.objectContaining({
+        message: accessToken,
+        response: expect.any(Response),
+      })
     );
   });
 
@@ -79,7 +82,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     };
 
     await expect(validateApiResponse(response, options)).rejects.toThrow(
-      responseErrorFactory.forbiddenResponseError('Access forbidden', headers)
+      expect.objectContaining({
+        message: 'Access forbidden',
+        response: expect.any(Response),
+      })
     );
   });
 
@@ -90,10 +96,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     };
 
     await expect(validateApiResponse(response, options)).rejects.toThrow(
-      responseErrorFactory.internalServerErrorResponseError(
-        'Internal server error',
-        headers
-      )
+      expect.objectContaining({
+        message: 'Internal server error',
+        response: expect.any(Response),
+      })
     );
   });
 
@@ -105,10 +111,10 @@ describe('validateApiResponse for credential-single-parse', () => {
     } as unknown as CredentialSingleParseResponse;
 
     await expect(validateApiResponse(response, options)).rejects.toThrow(
-      responseErrorFactory.internalServerErrorResponseError(
-        buildUnknownActionMessage(path, unknownAction),
-        headers
-      )
+      expect.objectContaining({
+        message: buildUnknownActionMessage(path, unknownAction),
+        response: expect.any(Response),
+      })
     );
   });
 });

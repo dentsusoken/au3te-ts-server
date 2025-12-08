@@ -21,7 +21,7 @@ import {
 } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { ProcessApiRequest } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
-import { Handle } from '../core/handle';
+import { HandleWithOptions } from '../core/handleWithOptions';
 import { SessionSchemas } from '../../session/types';
 import { GenerateAuthorizationPage } from './generateAuthorizationPage';
 import { HandleNoInteraction } from './handleNoInteraction';
@@ -34,12 +34,18 @@ import { ClearCurrentUserInfoInSession } from './clearCurrentUserInfoInSession';
 import { CheckSubject } from './checkSubject';
 import { CalcSub } from './calcSub';
 import { ToApiRequest } from '../core/toApiRequest';
-import { ProcessRequest } from '../core/processRequest';
+import { ProcessRequestWithOptions } from '../core/processRequestWithOptions';
+import { ApiRequestWithOptions, ApiResponseWithOptions } from '../core';
 
 /**
  * Configuration interface for the Authorization handler.
+ * @template SS - The type of session schemas in use.
+ * @template OPTS - The type of options accepted by the handler.
  */
-export interface AuthorizationHandlerConfiguration<SS extends SessionSchemas> {
+export interface AuthorizationHandlerConfiguration<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> {
   /**
    * The path for the authorization endpoint.
    */
@@ -86,7 +92,7 @@ export interface AuthorizationHandlerConfiguration<SS extends SessionSchemas> {
   /**
    * Function to generate the authorization consent page
    */
-  generateAuthorizationPage: GenerateAuthorizationPage<SS>;
+  generateAuthorizationPage: GenerateAuthorizationPage<SS, OPTS>;
 
   /**
    * Function to validate the subject identifier
@@ -106,20 +112,20 @@ export interface AuthorizationHandlerConfiguration<SS extends SessionSchemas> {
   /**
    * Function to process the API response for authorization
    */
-  processApiResponse: ProcessApiResponse<AuthorizationResponse>;
+  processApiResponse: ProcessApiResponse<ApiResponseWithOptions<AuthorizationResponse, OPTS>, OPTS>;
 
   /**
    * Function to handle the authorization request
    */
-  handle: Handle<AuthorizationRequest>;
+  handle: HandleWithOptions<AuthorizationRequest, OPTS>;
 
   /**
    * Function to convert an HTTP request to an AuthorizationRequest.
    */
-  toApiRequest: ToApiRequest<AuthorizationRequest>;
+  toApiRequest: ToApiRequest<ApiRequestWithOptions<AuthorizationRequest, OPTS>> 
 
   /**
    * Function to process incoming HTTP requests to the authorization endpoint.
    */
-  processRequest: ProcessRequest;
+  processRequest: ProcessRequestWithOptions<OPTS>;
 }

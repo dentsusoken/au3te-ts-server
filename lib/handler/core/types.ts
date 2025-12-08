@@ -23,9 +23,9 @@
  * @property {REQ} apiRequest - The API request object
  * @property {OPTS} options - Additional options for making the API request
  */
-export type ApiRequestWithOptions<REQ extends object, OPTS> = {
+export type ApiRequestWithOptions<REQ extends object, OPTS = unknown> = {
   apiRequest: REQ;
-  options: OPTS;
+  options?: OPTS;
 };
 
 /**
@@ -36,7 +36,7 @@ export type ApiRequestWithOptions<REQ extends object, OPTS> = {
  * @property {RES} apiResponse - The API response object
  * @property {OPTS} options - Additional options associated with the API response
  */
-export type ApiResponseWithOptions<RES, OPTS> = {
+export type ApiResponseWithOptions<RES, OPTS = unknown> = {
   apiResponse: RES;
-  options: OPTS;
+  options?: OPTS;
 };

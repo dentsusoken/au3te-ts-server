@@ -21,6 +21,7 @@ import { Headers } from '../core/responseFactory';
 import { Handle } from '../core/handle';
 import { TokenIssueRequest } from '@vecrea/au3te-ts-common/schemas.token-issue';
 import { BuildTokenFailError } from '../token-fail/buildTokenFailError';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
  * Handler function type for processing password grant type token requests
@@ -33,8 +34,11 @@ export type HandlePassword = (
 /**
  * Parameters required to create a password grant type handler
  */
-type CreateHandlePasswordParams = {
-  getByCredentials: GetByCredentials;
+type CreateHandlePasswordParams<
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = {
+  getByCredentials: GetByCredentials<U, T>;
   handle4TokenIssue: Handle<TokenIssueRequest, Headers>;
   buildTokenFailError: BuildTokenFailError;
 };
@@ -50,11 +54,11 @@ type CreateHandlePasswordParams = {
  * @throws ResponseError if user credentials are invalid
  */
 export const createHandlePassword =
-  ({
+  <U extends User, T extends keyof Omit<U, 'loginId' | 'password'> = never>({
     getByCredentials,
     handle4TokenIssue,
     buildTokenFailError,
-  }: CreateHandlePasswordParams): HandlePassword =>
+  }: CreateHandlePasswordParams<U, T>): HandlePassword =>
   async (response: TokenResponse, headers: Headers): Promise<Response> => {
     const { username, password, ticket } = response;
 

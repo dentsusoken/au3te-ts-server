@@ -30,6 +30,8 @@ import {
 import { ExtractorConfiguration } from './ExtractorConfiguration';
 import { defaultExtractAccessToken } from './extractAccessToken';
 import { ExtractAccessToken } from './extractAccessToken';
+import { ExtractPathParameter } from './extractPathParameter';
+import { defaultExtractPathParameter } from './extractPathParameter';
 
 /**
  * Configuration interface for extractors used in endpoint processing.
@@ -56,4 +58,9 @@ export class ExtractorConfigurationImpl implements ExtractorConfiguration {
    * Extracts an access token from the request.
    */
   extractAccessToken: ExtractAccessToken = defaultExtractAccessToken;
+
+  /**
+   * Extracts path parameters from the request.
+   */
+  extractPathParameter: ExtractPathParameter = defaultExtractPathParameter;
 }

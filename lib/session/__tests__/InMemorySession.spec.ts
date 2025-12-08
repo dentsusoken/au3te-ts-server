@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { z } from 'zod';
 import { InMemorySession } from '../InMemorySession';
-import { sessionSchemas } from '../sessionSchemas';
+import { defaultSessionSchemas } from '../sessionSchemas';
 
 describe('InMemorySession', () => {
   let session: InMemorySession<TestSchemas>;
@@ -145,7 +145,7 @@ describe('InMemorySession', () => {
 
   describe('sessionSchemas', () => {
     it('should work with sessionSchemas', async () => {
-      const session = new InMemorySession(sessionSchemas);
+      const session = new InMemorySession(defaultSessionSchemas);
 
       // AuthorizationDecisionParamsをセット
       await session.set('authorizationDecisionParams', {

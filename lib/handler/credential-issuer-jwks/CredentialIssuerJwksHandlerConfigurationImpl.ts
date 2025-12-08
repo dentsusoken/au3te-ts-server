@@ -38,7 +38,7 @@ import { ToApiRequest } from '../core/toApiRequest';
 import { ProcessRequest } from '../core/processRequest';
 import { defaultToApiRequest } from './toApiRequest';
 import { createProcessRequest } from '../core/processRequest';
-import { sessionSchemas } from '@/session/sessionSchemas';
+import { defaultSessionSchemas } from '@/session/sessionSchemas';
 
 /** The path for the credential issuer JWKS endpoint */
 export const CREDENTIAL_ISSUER_JWKS_PATH = '/api/vci/jwks';
@@ -48,7 +48,7 @@ export const CREDENTIAL_ISSUER_JWKS_PATH = '/api/vci/jwks';
  * This class configures the handling of credential issuer JWKS requests.
  */
 export class CredentialIssuerJwksHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
+  SS extends SessionSchemas = typeof defaultSessionSchemas
 > implements CredentialIssuerJwksHandlerConfiguration
 {
   /** The path for the credential issuer JWKS endpoint. */

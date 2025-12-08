@@ -19,6 +19,11 @@
       "import": "./dist/api/index.mjs",
       "require": "./dist/api/index.cjs"
     },
+    "./federation": {
+      "types": "./dist/federation/index.d.ts",
+      "import": "./dist/federation/index.mjs",
+      "require": "./dist/federation/index.cjs"
+    },
     "./handler.core": {
       "types": "./dist/handler/core/index.d.ts",
       "import": "./dist/handler/core/index.mjs",
@@ -109,6 +114,16 @@
       "import": "./dist/handler/service-jwks/index.mjs",
       "require": "./dist/handler/service-jwks/index.cjs"
     },
+    "./handler.federation-initiation": {
+      "types": "./dist/handler/federation-initiation/index.d.ts",
+      "import": "./dist/handler/federation-initiation/index.mjs",
+      "require": "./dist/handler/federation-initiation/index.cjs"
+    },
+    "./handler.federation-callback": {
+      "types": "./dist/handler/federation-callback/index.d.ts",
+      "import": "./dist/handler/federation-callback/index.mjs",
+      "require": "./dist/handler/federation-callback/index.cjs"
+    },
     "./extractor": {
       "types": "./dist/extractor/index.d.ts",
       "import": "./dist/extractor/index.mjs",
@@ -129,15 +144,20 @@
   "devDependencies": {
     "@types/node": "^20.12.7",
     "dotenv": "^16.4.5",
+    "samlify-validator-js": "^0.0.1",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^7.2.6",
     "vite-plugin-dts": "^4.5.4",
-    "vitest": "^1.4.0"
+    "vitest": "^4.0.15"
   },
   "peerDependencies": {
     "@vecrea/au3te-ts-common": "^0.1.2",
     "@vecrea/oid4vc-core": "^0.1.0",
     "u8a-utils": "^1.0.12",
     "zod": "^3.23.8"
+  },
+  "dependencies": {
+    "oauth4webapi": "^3.8.2",
+    "samlify": "^2.10.2"
   }
 }

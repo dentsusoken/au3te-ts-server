@@ -19,6 +19,7 @@ import { ExtractParameters } from './extractParameters';
 import { ExtractClientCredentials } from './extractClientCredentials';
 import { ExtractClientCertificateAndPath } from './extractClientCertificateAndPath';
 import { ExtractAccessToken } from './extractAccessToken';
+import { ExtractPathParameter } from './extractPathParameter';
 
 /**
  * Configuration interface for extractors used in endpoint processing.
@@ -43,4 +44,9 @@ export interface ExtractorConfiguration {
    * Extracts an access token from the request.
    */
   extractAccessToken: ExtractAccessToken;
+
+  /**
+   * Extracts path parameters from the request.
+   */
+  extractPathParameter: ExtractPathParameter;
 }

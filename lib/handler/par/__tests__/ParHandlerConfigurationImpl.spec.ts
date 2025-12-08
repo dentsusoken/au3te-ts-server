@@ -3,7 +3,7 @@ import { ParHandlerConfigurationImpl } from '../ParHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
 import { Session } from '../../../session/Session';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 import { ExtractorConfigurationImpl } from '../../../extractor/ExtractorConfigurationImpl';
 
 describe('ParHandlerConfigurationImpl', () => {
@@ -13,13 +13,13 @@ describe('ParHandlerConfigurationImpl', () => {
   } as ApiClient;
 
   // Mock Session
-  const mockSession = {} as Session<typeof sessionSchemas>;
+  const mockSession = {} as Session<typeof defaultSessionSchemas>;
 
   // Create a mock BaseHandlerConfiguration
   const mockServerConfig = {
     apiClient: mockApiClient,
     session: mockSession,
-  } as ServerHandlerConfiguration<typeof sessionSchemas>;
+  } as ServerHandlerConfiguration<typeof defaultSessionSchemas>;
 
   // Create ExtractorConfiguration instance
   const extractorConfiguration = new ExtractorConfigurationImpl();

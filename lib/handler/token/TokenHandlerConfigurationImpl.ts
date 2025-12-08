@@ -46,17 +46,21 @@ import { ProcessRequest } from '../core/processRequest';
 import { createToApiRequest } from '../core/toClientAuthRequest';
 import { createProcessRequest } from '../core/processRequest';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
  * Configuration parameters for TokenHandlerConfigurationImpl constructor.
  * Provides all necessary configurations for handling token endpoint operations.
  */
-type TokenHandlerConfigurationImplConstructorParams = {
+type TokenHandlerConfigurationImplConstructorParams<
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = {
   /** Server configuration for common handler operations */
   serverHandlerConfiguration: ServerHandlerConfiguration<SessionSchemas>;
 
   /** Configuration for user authentication and management */
-  userHandlerConfiguration: UserHandlerConfiguration;
+  userHandlerConfiguration: UserHandlerConfiguration<U, T>;
 
   /** Configuration for handling token operation failures */
   tokenFailHandlerConfiguration: TokenFailHandlerConfiguration;
@@ -91,8 +95,10 @@ export const TOKEN_PATH = '/api/token';
  *
  * @implements {TokenHandlerConfiguration}
  */
-export class TokenHandlerConfigurationImpl
-  implements TokenHandlerConfiguration
+export class TokenHandlerConfigurationImpl<
+  U extends User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> implements TokenHandlerConfiguration
 {
   /** The path for the token endpoint. Default is '/api/token'. */
   path: string = TOKEN_PATH;
@@ -144,7 +150,7 @@ export class TokenHandlerConfigurationImpl
     tokenIssueHandlerConfiguration,
     tokenCreateHandlerConfiguration,
     extractorConfiguration,
-  }: TokenHandlerConfigurationImplConstructorParams) {
+  }: TokenHandlerConfigurationImplConstructorParams<U, T>) {
     const {
       apiClient,
       buildUnknownActionMessage,

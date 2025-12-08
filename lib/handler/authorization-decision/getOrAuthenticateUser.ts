@@ -17,25 +17,29 @@
 
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 import { Session } from '../../session/Session';
-import { sessionSchemas } from '../../session/sessionSchemas';
 import { GetByCredentials } from '@vecrea/au3te-ts-common/handler.user';
+import { SessionSchemas } from '../../session/types';
 
 /**
- * Type definition for a function that retrieves or authenticates a user.
- * @param {Session<typeof sessionSchemas>} session - The session object to store/retrieve user data
- * @param {Record<string, string>} parameters - Request parameters containing login credentials
- * @returns {Promise<{user: User, authTime: number} | undefined>} User data and auth time if successful, undefined if not
- */
-/**
  * Type definition for a function that retrieves or authenticates a user
- * @param {Session<typeof sessionSchemas>} session - Session object to store/retrieve user data
+ * @param {Session<SessionSchemas>} session - Session object to store/retrieve user data
  * @param {Record<string, string>} parameters - Request parameters containing login credentials
  * @returns {Promise<{user: User | undefined; authTime: number | undefined}>} User data and auth time if successful, undefined if not
  */
 export type GetOrAuthenticateUser = (
-  session: Session<typeof sessionSchemas>,
+  session: Session<SessionSchemas>,
   parameters: Record<string, string>
 ) => Promise<{ user: User | undefined; authTime: number | undefined }>;
+
+/**
+ * Factory type for creating a GetOrAuthenticateUser implementation.
+ */
+export type GetOrAuthenticateUserFactory<
+  U extends User = User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = (
+  getByCredentials: GetByCredentials<U, T>
+) => GetOrAuthenticateUser;
 
 const emptyResult = { user: undefined, authTime: undefined };
 
@@ -44,8 +48,12 @@ const emptyResult = { user: undefined, authTime: undefined };
  * @param {GetByCredentials} getByCredentials - Function to validate credentials and retrieve user
  * @returns {GetOrAuthenticateUser} Function that handles user retrieval/authentication
  */
-export const createGetOrAuthenticateUser =
-  (getByCredentials: GetByCredentials): GetOrAuthenticateUser =>
+export const createGetOrAuthenticateUser = <
+  U extends User = User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+>(
+  getByCredentials: GetByCredentials<U, T>
+): GetOrAuthenticateUser =>
   async (session, parameters) => {
     const { user, authTime } = await session.getBatch('user', 'authTime');
 
@@ -56,7 +64,7 @@ export const createGetOrAuthenticateUser =
     const { loginId, password } = parameters;
 
     if (!loginId || !password) {
-      return { ...emptyResult };
+      return emptyResult;
     }
 
     const loginUser = await getByCredentials(loginId, password);
@@ -72,5 +80,5 @@ export const createGetOrAuthenticateUser =
       return { user: loginUser, authTime };
     }
 
-    return { ...emptyResult };
+    return emptyResult;
   };

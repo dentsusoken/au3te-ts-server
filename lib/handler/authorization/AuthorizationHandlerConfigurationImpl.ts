@@ -20,20 +20,28 @@ import {
   AuthorizationResponse,
   authorizationResponseSchema,
 } from '@vecrea/au3te-ts-common/schemas.authorization';
+import type { ApiClient } from '@vecrea/au3te-ts-common/api';
 import {
   ProcessApiRequest,
   createProcessApiRequest,
 } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
-import { createHandle, Handle } from '../core/handle';
+import {
+  createHandleWithOptions,
+  HandleWithOptions,
+  CreateHandleWithOptionsParams,
+} from '../core/handleWithOptions';
+import { ApiResponseWithOptions } from '../core/types';
 import { SessionSchemas } from '../../session/types';
 import {
   createGenerateAuthorizationPage,
   GenerateAuthorizationPage,
+  CreateGenerateAuthorizationPageParams,
 } from './generateAuthorizationPage';
 import {
   createHandleNoInteraction,
   HandleNoInteraction,
+  CreateHandleNoInteractionParams,
 } from './handleNoInteraction';
 import {
   defaultResponseToDecisionParams,
@@ -42,6 +50,7 @@ import {
 import {
   ClearCurrentUserInfoInSessionIfNecessary,
   createClearCurrentUserInfoInSessionIfNecessary,
+  CreateClearCurrentUserInfoInSessionIfNecessaryParams,
 } from './clearCurrentUserInfoInSessionIfNecessary';
 import { BuildResponse, simpleBuildResponse } from './buildResponse';
 import { CheckPrompts, defaultCheckPrompts } from './checkPrompts';
@@ -52,25 +61,34 @@ import {
 } from './clearCurrentUserInfoInSession';
 import { CheckSubject, defaultCheckSubject } from './checkSubject';
 import { CalcSub, defaultCalcSub } from './calcSub';
-import { createProcessApiResponse } from './processApiResponse';
+import {
+  createProcessApiResponse,
+  CreateProcessApiResponseParams4Authorization,
+} from './processApiResponse';
 import { AuthorizationHandlerConfiguration } from './AuthorizationHandlerConfiguration';
 import { AuthorizationIssueHandlerConfiguration } from '../authorization-issue/AuthorizationIssueHandlerConfiguration';
 import { AuthorizationFailHandlerConfiguration } from '../authorization-fail/AuthorizationFailHandlerConfiguration';
 import { AuthorizationPageHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.authorization-page';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { ToApiRequest } from '../core/toApiRequest';
-import { ProcessRequest } from '../core/processRequest';
-import { createToApiRequest } from './toApiRequest';
-import { createProcessRequest } from '../core/processRequest';
+import {
+  ProcessRequestWithOptions,
+  CreateProcessRequestWithOptionsParams,
+} from '../core';
+import { createToApiRequest, CreateToApiRequestParams } from './toApiRequest';
+import { createProcessRequestWithOptions } from '../core/processRequestWithOptions';
+import { ApiRequestWithOptions } from '../core/types';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
-import { sessionSchemas } from '../../session/sessionSchemas';
+import { FederationManager } from '@/federation/FederationManager';
 
 /**
  * Parameters for constructing AuthorizationHandlerConfigurationImpl.
  * @template SS - The type of session schemas, extending SessionSchemas.
+ * @template OPTS - The type of handler options.
  */
-type AuthorizationHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+export type AuthorizationHandlerConfigurationImplConstructorParams<
+  SS extends SessionSchemas,
+  OPTS = unknown
 > = {
   /** Server handler configuration */
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
@@ -82,6 +100,95 @@ type AuthorizationHandlerConfigurationImplConstructorParams<
   authorizationPageHandlerConfiguration: AuthorizationPageHandlerConfiguration;
   /** Extractor configuration */
   extractorConfiguration: ExtractorConfiguration;
+  federationManager: FederationManager;
+  /** Overrides for extending handler behaviour */
+  overrides?: AuthorizationHandlerConfigurationImplOverrides<SS, OPTS>;
+};
+
+export type ProcessApiRequestFactory = (
+  path: string,
+  schema: typeof authorizationResponseSchema,
+  apiClient: ApiClient
+) => ProcessApiRequest<AuthorizationRequest, AuthorizationResponse>;
+
+export type ClearCurrentUserInfoInSessionIfNecessaryFactory<
+  SS extends SessionSchemas
+> = (
+  params: CreateClearCurrentUserInfoInSessionIfNecessaryParams<SS>
+) => ClearCurrentUserInfoInSessionIfNecessary<SS>;
+
+export type GenerateAuthorizationPageFactory<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = (
+  params: CreateGenerateAuthorizationPageParams<SS>
+) => GenerateAuthorizationPage<SS, OPTS>;
+
+export type HandleNoInteractionFactory<SS extends SessionSchemas> = (
+  params: CreateHandleNoInteractionParams
+) => HandleNoInteraction<SS>;
+
+export type ProcessApiResponseFactory<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = (
+  params: CreateProcessApiResponseParams4Authorization<SS, OPTS>
+) => ProcessApiResponse<
+  ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+  OPTS
+>;
+
+export type HandleFactory<OPTS = unknown> = (
+  params: CreateHandleWithOptionsParams<
+    AuthorizationRequest,
+    AuthorizationResponse,
+    OPTS
+  >
+) => HandleWithOptions<AuthorizationRequest, OPTS>;
+
+export type ToApiRequestFactory<OPTS = unknown> = (
+  params: CreateToApiRequestParams
+) => ToApiRequest<ApiRequestWithOptions<AuthorizationRequest, OPTS>>;
+
+export type ProcessRequestFactory<OPTS = unknown> = (
+  params: CreateProcessRequestWithOptionsParams<AuthorizationRequest, OPTS>
+) => ProcessRequestWithOptions<OPTS>;
+
+export type AuthorizationHandlerConfigurationImplOverrides<
+  SS extends SessionSchemas,
+  OPTS = unknown
+> = {
+  createProcessApiRequest?: ProcessApiRequestFactory;
+  processApiRequest?: ProcessApiRequest<
+    AuthorizationRequest,
+    AuthorizationResponse
+  >;
+  responseToDecisionParams?: ResponseToDecisionParams;
+  checkPrompts?: CheckPrompts;
+  checkAuthAge?: CheckAuthAge;
+  clearCurrentUserInfoInSession?: ClearCurrentUserInfoInSession<SS>;
+  createClearCurrentUserInfoInSessionIfNecessary?: ClearCurrentUserInfoInSessionIfNecessaryFactory<SS>;
+  clearCurrentUserInfoInSessionIfNecessary?: ClearCurrentUserInfoInSessionIfNecessary<SS>;
+  buildResponse?: BuildResponse;
+  createGenerateAuthorizationPage?: GenerateAuthorizationPageFactory<SS, OPTS>;
+  generateAuthorizationPage?: GenerateAuthorizationPage<SS, OPTS>;
+  checkSubject?: CheckSubject;
+  calcSub?: CalcSub;
+  createHandleNoInteraction?: HandleNoInteractionFactory<SS>;
+  handleNoInteraction?: HandleNoInteraction<SS>;
+  createProcessApiResponse?: ProcessApiResponseFactory<SS, OPTS>;
+  processApiResponse?: ProcessApiResponse<
+    ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+    OPTS
+  >;
+  createHandle?: HandleFactory<OPTS>;
+  handle?: HandleWithOptions<AuthorizationRequest, OPTS>;
+  createToApiRequest?: ToApiRequestFactory<OPTS>;
+  toApiRequest?: ToApiRequest<
+    ApiRequestWithOptions<AuthorizationRequest, OPTS>
+  >;
+  createProcessRequest?: ProcessRequestFactory<OPTS>;
+  processRequest?: ProcessRequestWithOptions<OPTS>;
 };
 
 /** The path for the authorization endpoint */
@@ -90,11 +197,13 @@ export const AUTHORIZATION_PATH = '/api/authorization';
 /**
  * Implementation of the AuthorizationHandlerConfiguration interface.
  * @template SS - The type of session schemas, extending SessionSchemas.
- * @implements {AuthorizationHandlerConfiguration<SS>}
+ * @template OPTS - The type of handler options.
+ * @implements {AuthorizationHandlerConfiguration<SS, OPTS>}
  */
 export class AuthorizationHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
-> implements AuthorizationHandlerConfiguration<SS>
+  SS extends SessionSchemas,
+  OPTS = unknown
+> implements AuthorizationHandlerConfiguration<SS, OPTS>
 {
   /** The path for the authorization endpoint */
   path = AUTHORIZATION_PATH;
@@ -124,7 +233,7 @@ export class AuthorizationHandlerConfigurationImpl<
   buildResponse: BuildResponse;
 
   /** Function to generate the authorization page */
-  generateAuthorizationPage: GenerateAuthorizationPage<SS>;
+  generateAuthorizationPage: GenerateAuthorizationPage<SS, OPTS>;
 
   /** Function to check the subject */
   checkSubject: CheckSubject;
@@ -136,20 +245,23 @@ export class AuthorizationHandlerConfigurationImpl<
   handleNoInteraction: HandleNoInteraction<SS>;
 
   /** Function to process the API response for authorization */
-  processApiResponse: ProcessApiResponse<AuthorizationResponse>;
+  processApiResponse: ProcessApiResponse<
+    ApiResponseWithOptions<AuthorizationResponse, OPTS>,
+    OPTS
+  >;
 
   /** Function to handle the authorization request */
-  handle: Handle<AuthorizationRequest>;
+  handle: HandleWithOptions<AuthorizationRequest, OPTS>;
 
   /** Function to convert HTTP requests to API requests */
-  toApiRequest: ToApiRequest<AuthorizationRequest>;
+  toApiRequest: ToApiRequest<ApiRequestWithOptions<AuthorizationRequest, OPTS>>;
 
   /** Function to process incoming HTTP requests */
-  processRequest: ProcessRequest;
+  processRequest: ProcessRequestWithOptions<OPTS>;
 
   /**
    * Creates an instance of AuthorizationHandlerConfigurationImpl.
-   * @param {AuthorizationHandlerConfigurationImplConstructorParams<SS>} params - The parameters for constructing the instance.
+   * @param {AuthorizationHandlerConfigurationImplConstructorParams<SS, OPTS>} params - The parameters for constructing the instance.
    */
   constructor({
     serverHandlerConfiguration,
@@ -157,7 +269,9 @@ export class AuthorizationHandlerConfigurationImpl<
     authorizationFailHandlerConfiguration,
     authorizationPageHandlerConfiguration,
     extractorConfiguration,
-  }: AuthorizationHandlerConfigurationImplConstructorParams<SS>) {
+    // federationManager,
+    overrides,
+  }: AuthorizationHandlerConfigurationImplConstructorParams<SS, OPTS>) {
     const {
       apiClient,
       session,
@@ -167,78 +281,126 @@ export class AuthorizationHandlerConfigurationImpl<
       responseErrorFactory,
     } = serverHandlerConfiguration;
 
-    this.processApiRequest = createProcessApiRequest(
-      apiClient.authorizationPath,
-      authorizationResponseSchema,
-      apiClient
-    );
+    const resolvedOverrides =
+      overrides ??
+      ({} as AuthorizationHandlerConfigurationImplOverrides<SS, OPTS>);
 
-    this.responseToDecisionParams = defaultResponseToDecisionParams;
+    this.processApiRequest =
+      resolvedOverrides.processApiRequest ??
+      (
+        resolvedOverrides.createProcessApiRequest ??
+        (createProcessApiRequest as ProcessApiRequestFactory)
+      )(apiClient.authorizationPath, authorizationResponseSchema, apiClient);
 
-    this.checkPrompts = defaultCheckPrompts;
+    this.responseToDecisionParams =
+      resolvedOverrides.responseToDecisionParams ??
+      defaultResponseToDecisionParams;
 
-    this.checkAuthAge = defaultCheckAuthAge;
+    this.checkPrompts = resolvedOverrides.checkPrompts ?? defaultCheckPrompts;
+
+    this.checkAuthAge = resolvedOverrides.checkAuthAge ?? defaultCheckAuthAge;
 
     this.clearCurrentUserInfoInSession =
-      defaultClearCurrentUserInfoInSession as unknown as ClearCurrentUserInfoInSession<SS>;
+      resolvedOverrides.clearCurrentUserInfoInSession ??
+      (defaultClearCurrentUserInfoInSession as unknown as ClearCurrentUserInfoInSession<SS>);
 
     this.clearCurrentUserInfoInSessionIfNecessary =
-      createClearCurrentUserInfoInSessionIfNecessary({
+      resolvedOverrides.clearCurrentUserInfoInSessionIfNecessary ??
+      (
+        resolvedOverrides.createClearCurrentUserInfoInSessionIfNecessary ??
+        (createClearCurrentUserInfoInSessionIfNecessary as ClearCurrentUserInfoInSessionIfNecessaryFactory<SS>)
+      )({
         checkPrompts: this.checkPrompts,
         checkAuthAge: this.checkAuthAge,
         clearCurrentUserInfoInSession: this.clearCurrentUserInfoInSession,
       });
 
-    this.buildResponse = simpleBuildResponse;
+    this.buildResponse = resolvedOverrides.buildResponse ?? simpleBuildResponse;
 
-    this.generateAuthorizationPage = createGenerateAuthorizationPage({
-      responseToDecisionParams: this.responseToDecisionParams,
-      buildAuthorizationPageModel:
-        authorizationPageHandlerConfiguration.buildAuthorizationPageModel,
-      clearCurrentUserInfoInSessionIfNecessary:
-        this.clearCurrentUserInfoInSessionIfNecessary,
-      buildResponse: this.buildResponse,
-    });
+    this.generateAuthorizationPage =
+      resolvedOverrides.generateAuthorizationPage ??
+      (
+        resolvedOverrides.createGenerateAuthorizationPage ??
+        (createGenerateAuthorizationPage as GenerateAuthorizationPageFactory<
+          SS,
+          OPTS
+        >)
+      )({
+        responseToDecisionParams: this.responseToDecisionParams,
+        buildAuthorizationPageModel:
+          authorizationPageHandlerConfiguration.buildAuthorizationPageModel,
+        clearCurrentUserInfoInSessionIfNecessary:
+          this.clearCurrentUserInfoInSessionIfNecessary,
+        buildResponse: this.buildResponse,
+        // federationManager,
+      });
 
-    this.checkSubject = defaultCheckSubject;
+    this.checkSubject = resolvedOverrides.checkSubject ?? defaultCheckSubject;
 
-    this.calcSub = defaultCalcSub;
+    this.calcSub = resolvedOverrides.calcSub ?? defaultCalcSub;
 
-    this.handleNoInteraction = createHandleNoInteraction({
-      checkAuthAge: this.checkAuthAge,
-      checkSubject: this.checkSubject,
-      calcSub: this.calcSub,
-      buildAuthorizationFailError:
-        authorizationFailHandlerConfiguration.buildAuthorizationFailError,
-      handle4AuthorizationIssue: authorizationIssueHandlerConfiguration.handle,
-    });
+    this.handleNoInteraction =
+      resolvedOverrides.handleNoInteraction ??
+      (
+        resolvedOverrides.createHandleNoInteraction ??
+        (createHandleNoInteraction as HandleNoInteractionFactory<SS>)
+      )({
+        checkAuthAge: this.checkAuthAge,
+        checkSubject: this.checkSubject,
+        calcSub: this.calcSub,
+        buildAuthorizationFailError:
+          authorizationFailHandlerConfiguration.buildAuthorizationFailError,
+        handle4AuthorizationIssue:
+          authorizationIssueHandlerConfiguration.handle,
+      });
 
-    this.processApiResponse = createProcessApiResponse({
-      session,
-      path: this.path,
-      generateAuthorizationPage: this.generateAuthorizationPage,
-      handleNoInteraction: this.handleNoInteraction,
-      buildUnknownActionMessage,
-      responseFactory,
-      responseErrorFactory,
-    });
+    this.processApiResponse =
+      resolvedOverrides.processApiResponse ??
+      (
+        resolvedOverrides.createProcessApiResponse ??
+        createProcessApiResponse<SS, OPTS>
+      )({
+        session,
+        path: this.path,
+        generateAuthorizationPage: this.generateAuthorizationPage,
+        handleNoInteraction: this.handleNoInteraction,
+        buildUnknownActionMessage,
+        responseFactory,
+        responseErrorFactory,
+      });
 
-    this.handle = createHandle({
-      path: this.path,
-      processApiRequest: this.processApiRequest,
-      processApiResponse: this.processApiResponse,
-      recoverResponseResult,
-    });
+    this.handle =
+      resolvedOverrides.handle ??
+      (
+        resolvedOverrides.createHandle ??
+        createHandleWithOptions<
+          AuthorizationRequest,
+          AuthorizationResponse,
+          OPTS
+        >
+      )({
+        path: this.path,
+        processApiRequest: this.processApiRequest,
+        processApiResponse: this.processApiResponse,
+        recoverResponseResult,
+      });
 
-    this.toApiRequest = createToApiRequest({
-      extractParameters: extractorConfiguration.extractParameters,
-    });
+    this.toApiRequest =
+      resolvedOverrides.toApiRequest ??
+      (resolvedOverrides.createToApiRequest ?? createToApiRequest<OPTS>)({
+        extractParameters: extractorConfiguration.extractParameters,
+      });
 
-    this.processRequest = createProcessRequest({
-      path: this.path,
-      toApiRequest: this.toApiRequest,
-      handle: this.handle,
-      recoverResponseResult,
-    });
+    this.processRequest =
+      resolvedOverrides.processRequest ??
+      (
+        resolvedOverrides.createProcessRequest ??
+        createProcessRequestWithOptions<AuthorizationRequest, OPTS>
+      )({
+        path: this.path,
+        toApiRequest: this.toApiRequest,
+        handle: this.handle,
+        recoverResponseResult,
+      });
   }
 }

@@ -16,10 +16,16 @@
  */
 
 import { AuthorizationIssueRequest } from '@vecrea/au3te-ts-common/schemas.authorization-issue';
-import { ProcessRequest } from '../core/processRequest';
+import { ProcessRequest, CreateProcessRequestParams } from '../core';
 import { ToApiRequest } from '../core/toApiRequest';
 import { CollectClaims } from './collectClaims';
-import { GetOrAuthenticateUser } from './getOrAuthenticateUser';
+import {
+  GetOrAuthenticateUser,
+  GetOrAuthenticateUserFactory,
+} from './getOrAuthenticateUser';
+import { CreateToApiRequestParams } from './toApiRequest';
+import { SessionSchemas } from '../../session/types';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
  * Interface defining the configuration for the Authorization Decision handler.
@@ -51,3 +57,19 @@ export interface AuthorizationDecisionHandlerConfiguration {
    */
   processRequest: ProcessRequest;
 }
+
+/**
+ * Factories and direct override hooks for customizing the authorization decision handler.
+ */
+export type AuthorizationDecisionHandlerOverrideFactories<
+  U extends User = User,
+  T extends keyof Omit<U, 'loginId' | 'password'> = never
+> = {
+  createToApiRequest?: (
+    params: CreateToApiRequestParams<SessionSchemas>
+  ) => ToApiRequest<AuthorizationIssueRequest>;
+  createProcessRequest?: (
+    params: CreateProcessRequestParams<AuthorizationIssueRequest>
+  ) => ProcessRequest;
+  createGetOrAuthenticateUser?: GetOrAuthenticateUserFactory<U, T>;
+};

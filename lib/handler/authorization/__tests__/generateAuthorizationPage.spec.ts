@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createGenerateAuthorizationPage } from '../generateAuthorizationPage';
 import { AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { Session } from '../../../session/Session';
-import { sessionSchemas } from '../../../session/sessionSchemas';
+import { defaultSessionSchemas } from '../../../session/sessionSchemas';
 
 // Mock dependencies
 vi.mock('@vecrea/au3te-ts-common/handler.authorization-page');
@@ -10,8 +10,9 @@ vi.mock('@vecrea/au3te-ts-common/handler.authorization-page');
 describe('createGenerateAuthorizationPage', () => {
   const mockSession = {
     setBatch: vi.fn(),
+    set: vi.fn(),
     get: vi.fn(),
-  } as unknown as Session<typeof sessionSchemas>;
+  } as unknown as Session<typeof defaultSessionSchemas>;
   const mockResponseToDecisionParams = vi.fn();
   const mockClearCurrentUserInfoInSessionIfNecessary = vi.fn();
   const mockBuildResponse = vi.fn();
@@ -67,6 +68,7 @@ describe('createGenerateAuthorizationPage', () => {
       mockResponse,
       mockUser
     );
+    expect(mockSession.set).toHaveBeenCalledWith('authorizationPageModel', mockModel);
     expect(mockBuildResponse).toHaveBeenCalledWith(mockModel);
     expect(result).toBe(mockResponseObject);
   });

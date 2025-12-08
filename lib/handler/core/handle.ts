@@ -38,7 +38,7 @@ export type Handle<REQ extends object, OPTS = unknown> = (
  * @template RES - The type of the API response.
  * @template OPTS - The type of optional parameters.
  */
-export type CreateHandleParams<REQ extends object, RES, OPTS> = {
+export type CreateHandleParams<REQ extends object, RES, OPTS = unknown> = {
   /** The API endpoint path */
   path: string;
   /** Function to process the API request */
@@ -58,7 +58,7 @@ export type CreateHandleParams<REQ extends object, RES, OPTS> = {
  * @returns {Handle<REQ, OPTS>} A function that handles API requests and returns a Promise of Response.
  */
 export const createHandle =
-  <REQ extends object, RES, OPTS>({
+  <REQ extends object, RES, OPTS = unknown>({
     path,
     processApiRequest,
     processApiResponse,

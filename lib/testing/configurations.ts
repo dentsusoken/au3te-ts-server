@@ -17,7 +17,7 @@
 
 import { ApiClientImpl } from '../api/ApiClientImpl';
 import { AuthleteConfiguration } from '@vecrea/au3te-ts-common/conf';
-import { sessionSchemas } from '../session/sessionSchemas';
+import { defaultSessionSchemas } from '../session/sessionSchemas';
 import { InMemorySession } from '../session/InMemorySession';
 import { ServerHandlerConfigurationImpl } from '../handler/core/ServerHandlerConfigurationImpl';
 import { ExtractorConfigurationImpl } from '../extractor/ExtractorConfigurationImpl';
@@ -41,6 +41,8 @@ import { ServerCredentialHandlerConfigurationImpl } from '../handler/credential/
 import { CredentialSingleIssueHandlerConfigurationImpl } from '../handler/credential-single-issue/CredentialSingleIssueHandlerConfigurationImpl';
 import { ServiceJwksHandlerConfigurationImpl } from '../handler/service-jwks/ServiceJwksHandlerConfigurationImpl';
 import { CredentialIssuerJwksHandlerConfigurationImpl } from '../handler/credential-issuer-jwks/CredentialIssuerJwksHandlerConfigurationImpl';
+import { FederationManager } from '@/federation/FederationManager';
+import { vi } from 'vitest';
 
 export const configuration: AuthleteConfiguration = {
   apiVersion: process.env.API_VERSION!,
@@ -50,7 +52,7 @@ export const configuration: AuthleteConfiguration = {
 };
 
 export const apiClient = new ApiClientImpl(configuration);
-export const session = new InMemorySession(sessionSchemas);
+export const session = new InMemorySession(defaultSessionSchemas);
 export const serverHandlerConfiguration = new ServerHandlerConfigurationImpl(
   apiClient,
   session
@@ -60,6 +62,10 @@ export const parHandlerConfiguration = new ParHandlerConfigurationImpl({
   serverHandlerConfiguration,
   extractorConfiguration,
 });
+
+const federationManager = {
+  getConfigurations: vi.fn(),
+} as unknown as FederationManager;
 export const authorizationIssueHandlerConfiguration =
   new AuthorizationIssueHandlerConfigurationImpl(serverHandlerConfiguration);
 export const authorizationFailHandlerConfiguration =
@@ -73,6 +79,7 @@ export const authorizationHandlerConfiguration =
     authorizationFailHandlerConfiguration,
     authorizationPageHandlerConfiguration,
     extractorConfiguration,
+    federationManager,
   });
 export const userHandlerConfiguration = new UserHandlerConfigurationImpl();
 export const authorizationDecisionHandlerConfiguration =

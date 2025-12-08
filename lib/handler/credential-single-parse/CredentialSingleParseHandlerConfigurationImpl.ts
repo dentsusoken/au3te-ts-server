@@ -31,7 +31,7 @@ import {
 } from '../core/processApiRequestWithValidation';
 import { createValidateApiResponse } from './validateApiResponse';
 import { SessionSchemas } from '@/session/types';
-import { sessionSchemas } from '@/session/sessionSchemas';
+import { defaultSessionSchemas } from '@/session/sessionSchemas';
 import { CredentialApiOptions } from '../credential/types';
 
 /** The path for the credential single parse endpoint */
@@ -44,7 +44,7 @@ export const CREDENTIAL_SINGLE_PARSE_PATH = '/api/credential/single/parse';
  * @template SS - Type parameter extending SessionSchemas, defaults to sessionSchemas
  */
 export class CredentialSingleParseHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof sessionSchemas
+  SS extends SessionSchemas = typeof defaultSessionSchemas
 > implements CredentialSingleParseHandlerConfiguration
 {
   /** The endpoint path for credential single parse operations */
