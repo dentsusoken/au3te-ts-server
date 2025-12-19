@@ -73,8 +73,7 @@ export const createProcessSaml2Request = <
       }
 
       const { nameID } = userinfo;
-      const user: U = {
-        // ...userInfoWithoutSub,
+      const user = {
         subject: `${nameID}@${federation.id}`,
       } as U;
 
@@ -86,7 +85,12 @@ export const createProcessSaml2Request = <
       });
 
       model.user = user;
-      await userHandler.addUser(user);
+      await userHandler.addUser(user); // 5 minutes
+      await userHandler.cacheUserAttributes(
+        { ...user, ...userinfo.attributes } as U,
+        'saml2',
+        300
+      ); // 5 minutes
 
       return simpleBuildResponse(model as AuthorizationPageModel);
     } catch (error) {

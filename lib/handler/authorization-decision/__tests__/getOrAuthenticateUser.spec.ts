@@ -22,12 +22,13 @@ describe('getOrAuthenticateUser', () => {
 
   // Mock getByCredentials function
   const mockGetByCredentials = vi.fn();
+  const mockCacheUserAttributes = vi.fn();
 
   it('should return existing user and authTime from session if available', async () => {
     const authTime = Math.floor(Date.now() / 1000);
     const session = createMockSession(mockUser, authTime);
     const getOrAuthenticateUser =
-      createGetOrAuthenticateUser(mockGetByCredentials);
+      createGetOrAuthenticateUser(mockGetByCredentials, mockCacheUserAttributes);
 
     const result = await getOrAuthenticateUser(session, {});
 
@@ -38,7 +39,7 @@ describe('getOrAuthenticateUser', () => {
   it('should return undefined values if no credentials provided', async () => {
     const session = createMockSession();
     const getOrAuthenticateUser =
-      createGetOrAuthenticateUser(mockGetByCredentials);
+      createGetOrAuthenticateUser(mockGetByCredentials, mockCacheUserAttributes);
 
     const result = await getOrAuthenticateUser(session, {});
 
@@ -50,7 +51,7 @@ describe('getOrAuthenticateUser', () => {
     const session = createMockSession();
     mockGetByCredentials.mockResolvedValue(mockUser);
     const getOrAuthenticateUser =
-      createGetOrAuthenticateUser(mockGetByCredentials);
+      createGetOrAuthenticateUser(mockGetByCredentials, mockCacheUserAttributes);
 
     const parameters = {
       loginId: 'testuser',
@@ -77,7 +78,7 @@ describe('getOrAuthenticateUser', () => {
     const session = createMockSession();
     mockGetByCredentials.mockResolvedValue(undefined);
     const getOrAuthenticateUser =
-      createGetOrAuthenticateUser(mockGetByCredentials);
+      createGetOrAuthenticateUser(mockGetByCredentials, mockCacheUserAttributes);
 
     const parameters = {
       loginId: 'testuser',

@@ -17,7 +17,10 @@
 
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 import { Session } from '../../session/Session';
-import { GetByCredentials } from '@vecrea/au3te-ts-common/handler.user';
+import {
+  GetByCredentials,
+  CacheUserAttributes,
+} from '@vecrea/au3te-ts-common/handler.user';
 import { SessionSchemas } from '../../session/types';
 
 /**
@@ -38,7 +41,8 @@ export type GetOrAuthenticateUserFactory<
   U extends User = User,
   T extends keyof Omit<U, 'loginId' | 'password'> = never
 > = (
-  getByCredentials: GetByCredentials<U, T>
+  getByCredentials: GetByCredentials<U, T>,
+  cacheUserAttributes: CacheUserAttributes<U>
 ) => GetOrAuthenticateUser;
 
 const emptyResult = { user: undefined, authTime: undefined };
@@ -48,12 +52,14 @@ const emptyResult = { user: undefined, authTime: undefined };
  * @param {GetByCredentials} getByCredentials - Function to validate credentials and retrieve user
  * @returns {GetOrAuthenticateUser} Function that handles user retrieval/authentication
  */
-export const createGetOrAuthenticateUser = <
-  U extends User = User,
-  T extends keyof Omit<U, 'loginId' | 'password'> = never
->(
-  getByCredentials: GetByCredentials<U, T>
-): GetOrAuthenticateUser =>
+export const createGetOrAuthenticateUser =
+  <
+    U extends User = User,
+    T extends keyof Omit<U, 'loginId' | 'password'> = never
+  >(
+    getByCredentials: GetByCredentials<U, T>,
+    cacheUserAttributes: CacheUserAttributes<U>
+  ): GetOrAuthenticateUser =>
   async (session, parameters) => {
     const { user, authTime } = await session.getBatch('user', 'authTime');
 
@@ -76,6 +82,8 @@ export const createGetOrAuthenticateUser = <
         user: loginUser,
         authTime,
       });
+
+      await cacheUserAttributes(loginUser, 'oidc', 300);
 
       return { user: loginUser, authTime };
     }

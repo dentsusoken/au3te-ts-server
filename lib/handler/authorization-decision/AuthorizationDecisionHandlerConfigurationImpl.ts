@@ -133,7 +133,10 @@ export class AuthorizationDecisionHandlerConfigurationImpl<
       (
         resolvedOverrides.createGetOrAuthenticateUser ??
         createGetOrAuthenticateUser<U, T>
-      )(userHandlerConfiguration.getByCredentials as GetByCredentials<U, T>);
+      )(
+        userHandlerConfiguration.getByCredentials as GetByCredentials<U, T>,
+        userHandlerConfiguration.cacheUserAttributes
+      );
 
     this.toApiRequest =
       resolvedOverrides.toApiRequest ??
