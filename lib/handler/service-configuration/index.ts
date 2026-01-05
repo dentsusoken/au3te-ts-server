@@ -15,7 +15,10 @@
  * License.
  */
 
+export * from './AuthorizationServerMetadataHandlerConfigurationImpl';
+export * from './OpenIDConfigurationHandlerConfigurationImpl';
+export * from './processApiResponse';
 export * from './ServiceConfigurationHandlerConfiguration';
 export * from './ServiceConfigurationHandlerConfigurationImpl';
-export * from './processApiResponse';
 export * from './toApiRequest';
+
