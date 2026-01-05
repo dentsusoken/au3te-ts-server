@@ -76,6 +76,9 @@ export class ApiClientImpl extends AbstractApiClient {
   /** The path for credential issuer JWKS requests */
   readonly credentialIssuerJwksPath: string;
 
+  /** The path for standard introspection requests */
+  readonly standardIntrospectionPath: string;
+
   /**
    * Creates an instance of ApiClientImpl.
    * @param {AuthleteConfiguration} configuration - The configuration object for Authlete service.
@@ -136,6 +139,10 @@ export class ApiClientImpl extends AbstractApiClient {
     );
 
     this.credentialIssuerJwksPath = apiPath.credentialIssuerJwksPath(
+      this.configuration.serviceApiKey
+    );
+
+    this.standardIntrospectionPath = apiPath.standardIntrospectionPath(
       this.configuration.serviceApiKey
     );
   }

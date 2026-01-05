@@ -199,6 +199,11 @@ const GET_SERVICE_JWKS_API_PATH = '/api/%d/service/jwks/get';
 const CREDENTIAL_ISSUER_JWKS_API_PATH = '/api/%d/vci/jwks';
 
 /**
+ * The path template for the standard introspection API endpoint.
+ */
+const STANDARD_INTROSPECTION_API_PATH = '/api/%d/auth/introspection/standard';
+
+/**
  * Generates the path for the pushed authentication request API.
  *
  * This function creates the specific path for the pushed authentication request API endpoint
@@ -393,3 +398,13 @@ export const serviceJwksPath = (serviceId: string) =>
  */
 export const credentialIssuerJwksPath = (serviceId: string) =>
   CREDENTIAL_ISSUER_JWKS_API_PATH.replace(/%d/, serviceId);
+
+/**
+ * Generates the standard introspection API path for a given service ID.
+ *
+ * This function creates the specific path for the standard introspection API endpoint
+ * by replacing the '%d' placeholder in the STANDARD_INTROSPECTION_API_PATH constant
+ * with the provided service ID.
+ */
+export const standardIntrospectionPath = (serviceId: string) =>
+  STANDARD_INTROSPECTION_API_PATH.replace(/%d/, serviceId);
