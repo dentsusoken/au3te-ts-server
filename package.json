@@ -124,6 +124,11 @@
       "import": "./dist/handler/federation-callback/index.mjs",
       "require": "./dist/handler/federation-callback/index.cjs"
     },
+    "./handler.standard-introspection": {
+      "types": "./dist/handler/standard-introspection/index.d.ts",
+      "import": "./dist/handler/standard-introspection/index.mjs",
+      "require": "./dist/handler/standard-introspection/index.cjs"
+    },
     "./extractor": {
       "types": "./dist/extractor/index.d.ts",
       "import": "./dist/extractor/index.mjs",

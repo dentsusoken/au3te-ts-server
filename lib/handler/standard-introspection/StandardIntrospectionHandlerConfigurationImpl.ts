@@ -48,7 +48,7 @@ import {
 export const STANDARD_INTROSPECTION_PATH = '/api/introspect';
 
 /**
- * Overrides for {@link StandardIntrospectionImpl}.
+ * Overrides for {@link StandardIntrospectionHandlerConfigurationImpl}.
  *
  * @property {CreateToApiRequest} createToApiRequest - Factory to create `toApiRequest`.
  * @property {CreateProcessApiRequest} createProcessApiRequest - Factory to create `processApiRequest`.
@@ -65,7 +65,7 @@ export interface StandardIntrospectionHandlerConfigurationImplOverrides {
 }
 
 /**
- * Constructor parameters for {@link StandardIntrospectionImpl}.
+ * Constructor parameters for {@link StandardIntrospectionHandlerConfigurationImpl}.
  *
  * @template SS - The type of session schemas.
  * @property {ServerHandlerConfiguration<SS>} serverHandlerConfiguration - Configuration for the server handler.
@@ -73,7 +73,7 @@ export interface StandardIntrospectionHandlerConfigurationImplOverrides {
  * @property {ResourceServerHandlerConfiguration} resourceServerHandlerConfiguration - Configuration for the resource server handler.
  * @property {StandardIntrospectionHandlerConfigurationImplOverrides} [overrides] - Overrides for internal factories.
  */
-export interface StandardIntrospectionImplConstructorParams<
+export interface StandardIntrospectionHandlerConfigurationImplConstructorParams<
   SS extends SessionSchemas
 > {
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
@@ -108,7 +108,7 @@ export class StandardIntrospectionHandlerConfigurationImpl<
     extractorConfiguration,
     resourceServerHandlerConfiguration,
     overrides,
-  }: StandardIntrospectionImplConstructorParams<SS>) {
+  }: StandardIntrospectionHandlerConfigurationImplConstructorParams<SS>) {
     const {
       apiClient,
       responseFactory,
