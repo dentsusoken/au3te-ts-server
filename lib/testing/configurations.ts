@@ -41,7 +41,9 @@ import { ServerCredentialHandlerConfigurationImpl } from '../handler/credential/
 import { CredentialSingleIssueHandlerConfigurationImpl } from '../handler/credential-single-issue/CredentialSingleIssueHandlerConfigurationImpl';
 import { ServiceJwksHandlerConfigurationImpl } from '../handler/service-jwks/ServiceJwksHandlerConfigurationImpl';
 import { CredentialIssuerJwksHandlerConfigurationImpl } from '../handler/credential-issuer-jwks/CredentialIssuerJwksHandlerConfigurationImpl';
+import { StandardIntrospectionHandlerConfigurationImpl } from '../handler/standard-introspection/StandardIntrospectionHandlerConfigurationImpl';
 import { FederationManager } from '@/federation/FederationManager';
+import { ResourceServerHandlerConfigurationImpl } from '@vecrea/au3te-ts-common/handler.resourceServer';
 import { vi } from 'vitest';
 
 export const configuration: AuthleteConfiguration = {
@@ -82,6 +84,8 @@ export const authorizationHandlerConfiguration =
     federationManager,
   });
 export const userHandlerConfiguration = new UserHandlerConfigurationImpl();
+export const resourceServerHandlerConfiguration =
+  new ResourceServerHandlerConfigurationImpl();
 export const authorizationDecisionHandlerConfiguration =
   new AuthorizationDecisionHandlerConfigurationImpl({
     serverHandlerConfiguration,
@@ -134,3 +138,9 @@ export const serviceJwksHandlerConfiguration =
   new ServiceJwksHandlerConfigurationImpl(serverHandlerConfiguration);
 export const credentialIssuerJwksHandlerConfiguration =
   new CredentialIssuerJwksHandlerConfigurationImpl(serverHandlerConfiguration);
+export const standardIntrospectionHandlerConfiguration =
+  new StandardIntrospectionHandlerConfigurationImpl({
+    serverHandlerConfiguration,
+    extractorConfiguration,
+    resourceServerHandlerConfiguration,
+  });

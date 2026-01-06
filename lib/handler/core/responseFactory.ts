@@ -62,6 +62,11 @@ export interface ResponseFactory {
   okJwt(body?: string | null, headers?: Headers): Response;
 
   /**
+   * Creates a 200 OK response with Introspection JWT content type.
+   */
+  okIntrospectionJwt(body?: string | null, headers?: Headers): Response;
+
+  /**
    * Creates an HTTP response with a 200 OK status and HTML content.
    */
   form(body?: string | null): Response;
@@ -168,6 +173,14 @@ export const defaultResponseFactory: ResponseFactory = {
     defaultResponseFactory.createResponse(
       HttpStatus.OK,
       MediaType.APPLICATION_JWT,
+      body,
+      headers
+    ),
+
+  okIntrospectionJwt: (body?: string | null, headers?: Headers) =>
+    defaultResponseFactory.createResponse(
+      HttpStatus.OK,
+      MediaType.APPLICATION_INTROSPECTION_JWT,
       body,
       headers
     ),
