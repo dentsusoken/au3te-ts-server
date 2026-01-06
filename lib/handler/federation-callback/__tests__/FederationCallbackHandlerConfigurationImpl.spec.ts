@@ -53,6 +53,7 @@ describe('FederationCallbackHandlerConfigurationImpl', () => {
 
     const mockUserHandler = {
       addUser: vi.fn(),
+      cacheUserAttributes: vi.fn(),
     } as unknown as UserHandlerConfiguration<User>;
 
     const mockUserInfo = {
