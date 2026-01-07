@@ -15,7 +15,10 @@
  * License.
  */
 
-import { isJsonType, isFormUrlEncodedType } from '@vecrea/au3te-ts-common/utils';
+import {
+  isJsonType,
+  isFormUrlEncodedType,
+} from '@vecrea/au3te-ts-common/utils';
 
 /**
  * Represents a function that extracts parameters from a Request object.
@@ -57,10 +60,13 @@ export type ExtractParameters = (request: Request) => Promise<string>;
  *    - If the content type is JSON, it parses the request body as JSON and returns it as a stringified JSON.
  *    - If the content type is form-urlencoded, it parses the request body and returns it as a URL-encoded string.
  *
- * 2. For all other requests (including GET):
+ * 2. For PUT requests:
+ *    - If the content type is JSON, it parses the request body as JSON and returns it as a stringified JSON.
+ *
+ * 3. For all other requests (including GET):
  *    - It extracts parameters from the URL query string and returns them as a URL-encoded string.
  *
- * 3. If the content type is not supported or not specified for POST requests, it falls back to extracting
+ * 4. If the content type is not supported or not specified for POST requests, it falls back to extracting
  *    parameters from the URL query string.
  *
  * @example
@@ -78,6 +84,16 @@ export type ExtractParameters = (request: Request) => Promise<string>;
  * const getRequest = new Request('https://example.com?key=value&foo=bar');
  * const getResult = await defaultExtractParameters(getRequest);
  * // getResult will be 'key=value&foo=bar'
+ *
+ * @example
+ * // For a PUT request with JSON content
+ * const putRequest = new Request('https://example.com', {
+ *   method: 'PUT',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify({ key: 'value' })
+ * });
+ * const putResult = await defaultExtractParameters(putRequest);
+ * // putResult will be '{"key":"value"}'
  */
 export const defaultExtractParameters: ExtractParameters = async (request) => {
   const contentType = request.headers.get('Content-Type') || undefined;
@@ -89,6 +105,12 @@ export const defaultExtractParameters: ExtractParameters = async (request) => {
       const params = new URLSearchParams(await request.text());
 
       return params.toString();
+    }
+  }
+
+  if (request.method.toUpperCase() === 'PUT') {
+    if (isJsonType(contentType)) {
+      return JSON.stringify(await request.json());
     }
   }
 

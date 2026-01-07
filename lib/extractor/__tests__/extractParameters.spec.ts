@@ -16,6 +16,20 @@ describe('defaultExtractParameters', () => {
     expect(result).toBe('{"key":"value"}');
   });
 
+  it('should extract parameters from JSON PUT request', async () => {
+    const request = new Request('https://example.com', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ key: 'value' }),
+    });
+
+    const result = await defaultExtractParameters(request);
+
+    expect(result).toBe('{"key":"value"}');
+  });
+
   it('should extract parameters from form-urlencoded POST request', async () => {
     const data = { query: 'hello world', param: 'a&b=c' };
     const body = new URLSearchParams(data).toString();
