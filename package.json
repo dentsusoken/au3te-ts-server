@@ -129,6 +129,11 @@
       "import": "./dist/handler/standard-introspection/index.mjs",
       "require": "./dist/handler/standard-introspection/index.cjs"
     },
+    "./handler.client-registration": {
+      "types": "./dist/handler/client-registration/index.d.ts",
+      "import": "./dist/handler/client-registration/index.mjs",
+      "require": "./dist/handler/client-registration/index.cjs"
+    },
     "./extractor": {
       "types": "./dist/extractor/index.d.ts",
       "import": "./dist/extractor/index.mjs",

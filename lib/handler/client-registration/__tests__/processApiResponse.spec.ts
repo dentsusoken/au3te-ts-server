@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createProcessApiResponse } from '../processApiResponse';
 import { ClientRegistrationResponse } from '@vecrea/au3te-ts-common/schemas.client-registration';
 import { ResponseFactory } from '../../core/responseFactory';
-import { ResponseErrorFactory } from '../../core/ResponseErrorFactory';
+import { ResponseErrorFactory } from '../../core/responseErrorFactory';
+import { ResponseError } from '@/handler/core';
 
 describe('createProcessApiResponse', () => {
   const mockResponseFactory = {
@@ -55,7 +56,7 @@ describe('createProcessApiResponse', () => {
   it('should handle UNAUTHORIZED action', async () => {
     const response = { action: 'UNAUTHORIZED', responseContent: 'content' } as unknown as ClientRegistrationResponse;
     const error = new Error('unauthorized');
-    vi.mocked(mockResponseErrorFactory.unauthorizedResponseError).mockReturnValue(error);
+    vi.mocked(mockResponseErrorFactory.unauthorizedResponseError).mockReturnValue(error as unknown as ResponseError) as unknown as ResponseError;
 
     await expect(processApiResponse(response)).rejects.toThrow(error);
     expect(mockResponseErrorFactory.unauthorizedResponseError).toHaveBeenCalledWith('content');
@@ -64,7 +65,7 @@ describe('createProcessApiResponse', () => {
   it('should handle BAD_REQUEST action', async () => {
     const response = { action: 'BAD_REQUEST', responseContent: 'content' } as unknown as ClientRegistrationResponse;
     const error = new Error('bad request');
-    vi.mocked(mockResponseErrorFactory.badRequestResponseError).mockReturnValue(error);
+    vi.mocked(mockResponseErrorFactory.badRequestResponseError).mockReturnValue(error as unknown as ResponseError) as unknown as ResponseError;
 
     await expect(processApiResponse(response)).rejects.toThrow(error);
     expect(mockResponseErrorFactory.badRequestResponseError).toHaveBeenCalledWith('content');
@@ -73,7 +74,7 @@ describe('createProcessApiResponse', () => {
   it('should handle INTERNAL_SERVER_ERROR action', async () => {
     const response = { action: 'INTERNAL_SERVER_ERROR', responseContent: 'content' } as unknown as ClientRegistrationResponse;
     const error = new Error('internal server error');
-    vi.mocked(mockResponseErrorFactory.internalServerErrorResponseError).mockReturnValue(error);
+    vi.mocked(mockResponseErrorFactory.internalServerErrorResponseError).mockReturnValue(error as unknown as ResponseError) as unknown as ResponseError;
 
     await expect(processApiResponse(response)).rejects.toThrow(error);
     expect(mockResponseErrorFactory.internalServerErrorResponseError).toHaveBeenCalledWith('content');
@@ -82,7 +83,7 @@ describe('createProcessApiResponse', () => {
   it('should handle default action (UNKNOWN)', async () => {
     const response = { action: 'UNKNOWN', responseContent: 'content' } as unknown as ClientRegistrationResponse;
     const error = new Error('default unauthorized');
-    vi.mocked(mockResponseErrorFactory.unauthorizedResponseError).mockReturnValue(error);
+    vi.mocked(mockResponseErrorFactory.unauthorizedResponseError).mockReturnValue(error as unknown as ResponseError) as unknown as ResponseError;
 
     await expect(processApiResponse(response)).rejects.toThrow(error);
     expect(mockResponseErrorFactory.unauthorizedResponseError).toHaveBeenCalled();

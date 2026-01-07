@@ -46,6 +46,8 @@ export default defineConfig({
           './lib/handler/federation-callback/index.ts',
         'handler/standard-introspection':
           './lib/handler/standard-introspection/index.ts',
+        'handler/client-registration':
+          './lib/handler/client-registration/index.ts',
         extractor: './lib/extractor/index.ts',
         session: './lib/session/index.ts',
       },
