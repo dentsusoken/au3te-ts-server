@@ -45,6 +45,8 @@ import { StandardIntrospectionHandlerConfigurationImpl } from '../handler/standa
 import { FederationManager } from '@/federation/FederationManager';
 import { ResourceServerHandlerConfigurationImpl } from '@vecrea/au3te-ts-common/handler.resourceServer';
 import { vi } from 'vitest';
+import { ClientRegistrationHandlerConfigurationImpl } from '@/handler/client-registration/ClientRegistrationHandlerConfigurationImpl';
+import { ApiMethod } from '@/handler/client-registration/resolveApiPath';
 
 export const configuration: AuthleteConfiguration = {
   apiVersion: process.env.API_VERSION!,
@@ -143,4 +145,11 @@ export const standardIntrospectionHandlerConfiguration =
     serverHandlerConfiguration,
     extractorConfiguration,
     resourceServerHandlerConfiguration,
+  });
+
+export const clientRegistrationHandlerConfiguration = (method: ApiMethod) =>
+  new ClientRegistrationHandlerConfigurationImpl({
+    method,
+    serverHandlerConfiguration,
+    extractorConfiguration,
   });
