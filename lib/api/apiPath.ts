@@ -204,6 +204,11 @@ const CREDENTIAL_ISSUER_JWKS_API_PATH = '/api/%d/vci/jwks';
 const STANDARD_INTROSPECTION_API_PATH = '/api/%d/auth/introspection/standard';
 
 /**
+ * The path template for the client registration API endpoint.
+ */
+const CLIENT_REGISTRATION_API_PATH = '/api/%d/client/registration';
+
+/**
  * Generates the path for the pushed authentication request API.
  *
  * This function creates the specific path for the pushed authentication request API endpoint
@@ -408,3 +413,14 @@ export const credentialIssuerJwksPath = (serviceId: string) =>
  */
 export const standardIntrospectionPath = (serviceId: string) =>
   STANDARD_INTROSPECTION_API_PATH.replace(/%d/, serviceId);
+
+
+/**
+ * Generates the client registration API path for a given service ID.
+ *
+ * This function creates the specific path for the client registration API endpoint
+ * by replacing the '%d' placeholder in the CLIENT_REGISTRATION_API_PATH constant
+ * with the provided service ID.
+ */
+export const clientRegistrationPath = (serviceId: string) =>
+  CLIENT_REGISTRATION_API_PATH.replace(/%d/, serviceId);

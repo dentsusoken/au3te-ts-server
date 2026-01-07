@@ -79,6 +79,9 @@ export class ApiClientImpl extends AbstractApiClient {
   /** The path for standard introspection requests */
   readonly standardIntrospectionPath: string;
 
+  /** The path for client registration requests */
+  readonly clientRegistrationPath: string;
+
   /**
    * Creates an instance of ApiClientImpl.
    * @param {AuthleteConfiguration} configuration - The configuration object for Authlete service.
@@ -143,6 +146,10 @@ export class ApiClientImpl extends AbstractApiClient {
     );
 
     this.standardIntrospectionPath = apiPath.standardIntrospectionPath(
+      this.configuration.serviceApiKey
+    );
+
+    this.clientRegistrationPath = apiPath.clientRegistrationPath(
       this.configuration.serviceApiKey
     );
   }
