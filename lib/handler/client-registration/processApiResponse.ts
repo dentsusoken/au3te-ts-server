@@ -45,22 +45,30 @@ export const createProcessApiResponse: CreateProcessApiResponse = ({
   return async (apiResponse: ClientRegistrationResponse) => {
     const { action, responseContent } = apiResponse;
 
+    const parsedResponseContent = JSON.parse(responseContent ?? '{}');
+
+    if (parsedResponseContent.token_endpoint_auth_method === 'none') {
+      delete parsedResponseContent.client_secret;
+    }
+
+    const strResponseContent = JSON.stringify(parsedResponseContent);
+
     switch (action) {
       case 'OK':
-        return responseFactory.ok(responseContent);
+        return responseFactory.ok(strResponseContent);
       case 'CREATED':
-        return responseFactory.created(responseContent);
+        return responseFactory.created(strResponseContent);
       case 'UPDATED':
-        return responseFactory.ok(responseContent);
+        return responseFactory.ok(strResponseContent);
       case 'DELETED':
         return responseFactory.noContent();
       case 'UNAUTHORIZED':
-        throw responseErrorFactory.unauthorizedResponseError(responseContent);
+        throw responseErrorFactory.unauthorizedResponseError(strResponseContent);
       case 'BAD_REQUEST':
-        throw responseErrorFactory.badRequestResponseError(responseContent);
+        throw responseErrorFactory.badRequestResponseError(strResponseContent);
       case 'INTERNAL_SERVER_ERROR':
         throw responseErrorFactory.internalServerErrorResponseError(
-          responseContent
+          strResponseContent
         );
       default:
         throw responseErrorFactory.unauthorizedResponseError();
