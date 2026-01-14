@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Client Registration Support**: Added Client Registration API handler, configuration, and request/response processing.
+- **Standard Introspection Support**: Implemented standard introspection handler and configuration.
+- **Federation Enhancements**:
+  - Implemented SAML2 federation support.
+  - Added federation callback and initiation handlers.
+  - Added `buildAuthenticationRequestScope` function.
+  - Added `extractPathParameter` utility function.
+- **Service Configuration**: Added Authorization and OpenID configuration handlers.
+- **User Authentication**: Enhanced user authentication flow with caching capabilities.
+
+### Changed
+
+- **Refactoring**:
+  - Restrict federation to OIDC protocol only in some contexts.
+  - Renamed session schemas (e.g., `sessionSchemas` to `defaultSessionSchemas`) and federation-related types for consistency.
+  - Moved OIDC-related federation packages to `federation/oidc`.
+  - Migrated authorization to `HandleWithOptions` and added override support.
+  - Made `OPTS` optional in core request processing logic.
+
+### Fixed
+
+- Fixed import errors and type consistency issues in federation handlers.
+- Fixed bugs in federation implementation.
+- Handled undefined options in `processApiResponse` for credential single issue.
+
 ## [0.1.4] - 2025-07-25
 
 ### Changed
