@@ -42,7 +42,7 @@ import { CreateToApiRequest, createToApiRequest } from './toApiRequest';
 import { ClientRegistrationHandlerConfiguration } from './ClientRegistrationHandlerConfiguration';
 import { ApiMethod, resolveApiPath } from './resolveApiPath';
 
-export const CLIENT_REGISTRATION_PATH = '/connect/register/:clientId';
+export const CLIENT_REGISTRATION_PATH = '/api/register/:clientId';
 
 /**
  * Interface for overriding the default implementation factories.
