@@ -43,18 +43,14 @@ export const createProcessSaml2Response: CreateProcessSaml2Response = (
         throw new Error('SAMLResponse is not included in response.');
       }
 
-      try {
-        const { extract } = await sp.parseLoginResponse(idp, 'post', {
-          body: {
-            SAMLResponse,
-            RelayState,
-          },
-        });
+      const { extract } = await sp.parseLoginResponse(idp, 'post', {
+        body: {
+          SAMLResponse,
+          RelayState,
+        },
+      });
 
-        return saml2LoginResponseSchema.parse(extract);
-      } catch (e) {
-        console.log('e :>> ', e);
-      }
+      return saml2LoginResponseSchema.parse(extract);
     }
 
     // Redirectバインディングの場合（GET）
