@@ -21,7 +21,7 @@ import {
   GetByCredentials,
   CacheUserAttributes,
 } from '@vecrea/au3te-ts-common/handler.user';
-import { SessionSchemas } from '../../session/types';
+import { DefaultSessionSchemas } from '../../session/sessionSchemas';
 
 /**
  * Type definition for a function that retrieves or authenticates a user
@@ -30,7 +30,7 @@ import { SessionSchemas } from '../../session/types';
  * @returns {Promise<{user: User | undefined; authTime: number | undefined}>} User data and auth time if successful, undefined if not
  */
 export type GetOrAuthenticateUser = (
-  session: Session<SessionSchemas>,
+  session: Session<DefaultSessionSchemas>,
   parameters: Record<string, string>
 ) => Promise<{ user: User | undefined; authTime: number | undefined }>;
 

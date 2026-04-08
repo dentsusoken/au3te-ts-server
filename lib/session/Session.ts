@@ -31,7 +31,7 @@ export interface Session<T extends SessionSchemas> {
    * @param {K} key - The key to retrieve the value for.
    * @returns {Promise<z.infer<T[K]> | undefined>} A promise that resolves with the parsed value, or undefined if not found.
    */
-  get<K extends keyof T>(key: K): Promise<z.infer<T[K]> | undefined>;
+  get<K extends keyof T>(key: K): Promise<z.output<T[K]> | undefined>;
 
   /**
    * Retrieves multiple values associated with the specified keys.
@@ -50,7 +50,7 @@ export interface Session<T extends SessionSchemas> {
    * @param {z.infer<T[K]>} value - The value to set.
    * @returns {Promise<void>} A promise that resolves when the operation is complete.
    */
-  set<K extends keyof T>(key: K, value: z.infer<T[K]>): Promise<void>;
+  set<K extends keyof T>(key: K, value: z.output<T[K]>): Promise<void>;
 
   /**
    * Sets multiple key-value pairs in the session.
@@ -68,7 +68,7 @@ export interface Session<T extends SessionSchemas> {
    * @param {K} key - The key to delete the value for.
    * @returns {Promise<z.infer<T[K]> | undefined>} A promise that resolves with the deleted value, or undefined if not found.
    */
-  delete<K extends keyof T>(key: K): Promise<z.infer<T[K]> | undefined>;
+  delete<K extends keyof T>(key: K): Promise<z.output<T[K]> | undefined>;
 
   /**
    * Deletes multiple values associated with the specified keys.

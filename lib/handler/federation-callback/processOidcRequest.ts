@@ -98,10 +98,8 @@ export const createProcessOidcRequest = <
 
       const authTime = Math.floor(Date.now() / 1000);
 
-      await session.setBatch({
-        user,
-        authTime,
-      });
+      await session.set('user', user as never);
+      await session.set('authTime', authTime as never);
 
       model.user = user;
       await userHandler.addUser(user);

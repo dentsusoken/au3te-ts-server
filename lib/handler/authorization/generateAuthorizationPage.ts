@@ -22,6 +22,8 @@ import { SessionSchemas } from '../../session/types';
 import { ClearCurrentUserInfoInSessionIfNecessary } from './clearCurrentUserInfoInSessionIfNecessary';
 import { BuildResponse } from './buildResponse';
 import { ResponseToDecisionParams } from './responseToDecisionParams';
+import { User, Client } from '@vecrea/au3te-ts-common/schemas.common';
+import { AuthorizationDecisionParams } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
 
 /**
  * Type definition for a function that generates an authorization page.
@@ -43,7 +45,9 @@ export type GenerateAuthorizationPage<
  * Parameters for creating a GenerateAuthorizationPage function
  * @template SS - The type of SessionSchemas
  */
-export type CreateGenerateAuthorizationPageParams<SS extends SessionSchemas> = {
+export type CreateGenerateAuthorizationPageParams<
+  SS extends SessionSchemas
+> = {
   /** Function to convert response to decision parameters */
   responseToDecisionParams: ResponseToDecisionParams;
   /** Function to clear current user information from the session if necessary */
@@ -71,20 +75,27 @@ export const createGenerateAuthorizationPage =
     OPTS
   > =>
   async (response, session) => {
-    const authorizationDecisionParams = responseToDecisionParams(response);
+    const authorizationDecisionParams = responseToDecisionParams(
+      response
+    ) as AuthorizationDecisionParams;
     const { acrs, client } = response;
 
-    await session.setBatch({
-      authorizationDecisionParams,
-      acrs,
-      client,
-    });
+    await session.setBatch(
+      {
+        authorizationDecisionParams,
+        acrs: (acrs ?? undefined) as string[] | undefined,
+        client: (client ?? undefined) as Client | undefined,
+      } as never
+    );
     await clearCurrentUserInfoInSessionIfNecessary(response, session);
-    const user = await session.get('user');
+    const user = (await session.get('user')) as User | undefined;
 
     const model = buildAuthorizationPageModel(response, user);
 
-    await session.set('authorizationPageModel', model);
+    await session.set(
+      'authorizationPageModel',
+      model as never
+    );
 
     return buildResponse(model);
   };

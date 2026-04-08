@@ -61,9 +61,10 @@ export const createClearCurrentUserInfoInSessionIfNecessary =
     clearCurrentUserInfoInSession,
   }: CreateClearCurrentUserInfoInSessionIfNecessaryParams<SS>): ClearCurrentUserInfoInSessionIfNecessary<SS> =>
   async (response, session) => {
-    const authTime = (await session.get('authTime')) ?? 0;
+    const authTime = ((await session.get('authTime')) ?? 0) as number;
+    const prompts = response.prompts as string[] | null | undefined;
     const shouldClear =
-      checkPrompts(response.prompts) ||
+      checkPrompts(prompts) ||
       checkAuthAge(authTime, response.maxAge ?? undefined);
 
     if (shouldClear) {

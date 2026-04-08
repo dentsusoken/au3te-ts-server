@@ -44,7 +44,7 @@ export class InMemorySession<T extends SessionSchemas> implements Session<T> {
    * @param {K} key - The key to parse the value for.
    * @returns {z.infer<T[K]> | undefined} The parsed value, or undefined if not found or parsing fails.
    */
-  parseValue<K extends keyof T>(key: K): z.infer<T[K]> | undefined {
+  parseValue<K extends keyof T>(key: K): z.output<T[K]> | undefined {
     const value = this.data[key];
 
     if (!value) {
@@ -62,7 +62,7 @@ export class InMemorySession<T extends SessionSchemas> implements Session<T> {
    * @param {K} key - The key to retrieve the value for.
    * @returns {Promise<z.infer<T[K]> | undefined>} A promise that resolves with the parsed value, or undefined if not found.
    */
-  async get<K extends keyof T>(key: K): Promise<z.infer<T[K]> | undefined> {
+  async get<K extends keyof T>(key: K): Promise<z.output<T[K]> | undefined> {
     return this.parseValue(key);
   }
 
@@ -93,7 +93,7 @@ export class InMemorySession<T extends SessionSchemas> implements Session<T> {
    * @param {z.infer<T[K]>} value - The value to set.
    * @returns {Promise<void>} A promise that resolves when the operation is complete.
    */
-  async set<K extends keyof T>(key: K, value: z.infer<T[K]>): Promise<void> {
+  async set<K extends keyof T>(key: K, value: z.output<T[K]>): Promise<void> {
     this.data[key] = JSON.stringify(value);
   }
 
@@ -119,7 +119,7 @@ export class InMemorySession<T extends SessionSchemas> implements Session<T> {
    * @param {K} key - The key to delete the value for.
    * @returns {Promise<z.infer<T[K]> | undefined>} A promise that resolves with the deleted value, or undefined if not found.
    */
-  async delete<K extends keyof T>(key: K): Promise<z.infer<T[K]> | undefined> {
+  async delete<K extends keyof T>(key: K): Promise<z.output<T[K]> | undefined> {
     const result = this.parseValue(key);
     delete this.data[key];
 

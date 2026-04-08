@@ -34,6 +34,7 @@ import {
   CredentialSingleParseRequest,
   CredentialSingleParseResponse,
 } from '@vecrea/au3te-ts-common/schemas.credential-single-parse';
+import { CredentialRequestInfo } from '@vecrea/au3te-ts-common/schemas.credential';
 import { GetToOrder } from '@vecrea/au3te-ts-common/handler.credential';
 import { runAsyncCatching } from '@vecrea/oid4vc-core/utils';
 import { CredentialApiOptions } from '../credential/types';
@@ -126,7 +127,8 @@ export const createToApiRequest =
       credentialSingleParseRequest,
       options
     );
-    const credentialRequestInfo = credentialSingleParseResponse.info;
+    const credentialRequestInfo =
+      credentialSingleParseResponse.info as CredentialRequestInfo | null | undefined;
 
     if (!credentialRequestInfo) {
       throw new BadRequestError(

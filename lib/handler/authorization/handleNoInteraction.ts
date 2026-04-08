@@ -24,6 +24,7 @@ import { CheckSubject } from './checkSubject';
 import { CalcSub } from './calcSub';
 import { Handle } from '../core/handle';
 import { SessionSchemas } from '../../session/types';
+import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
  * Type definition for a function that handles no interaction authorization.
@@ -66,9 +67,10 @@ export const createHandleNoInteraction = <SS extends SessionSchemas>({
       'user',
       'authTime'
     );
-    const authTime = rawAuthTime ?? 0;
+    const authTime = (rawAuthTime ?? 0) as number;
+    const currentUser = user as User | undefined;
 
-    if (!user) {
+    if (!currentUser) {
       throw await buildAuthorizationFailError(
         response.ticket!,
         'NOT_LOGGED_IN'
@@ -82,7 +84,7 @@ export const createHandleNoInteraction = <SS extends SessionSchemas>({
       );
     }
 
-    if (checkSubject(response.subject ?? undefined, user.subject)) {
+    if (checkSubject(response.subject ?? undefined, currentUser.subject)) {
       throw await buildAuthorizationFailError(
         response.ticket!,
         'DIFFERENT_SUBJECT'

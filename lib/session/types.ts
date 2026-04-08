@@ -42,5 +42,5 @@ export type StoredSessionData<T extends SessionSchemas> = {
  * @template K - A union type of keys from T, representing the subset of session data being parsed.
  */
 export type ParsedSessionData<T extends SessionSchemas, K extends keyof T> = {
-  [P in K]?: z.infer<T[P]>;
+  [P in K]?: z.output<T[P]>;
 };
