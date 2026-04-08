@@ -15,6 +15,7 @@
  * License.
  */
 
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import {
   AuthorizationIssueRequest,
   AuthorizationIssueResponse,
@@ -24,7 +25,6 @@ import { ProcessApiRequest } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
 import { createProcessApiResponse } from './processApiResponse';
 import { Handle, createHandle } from '../core/handle';
-import { SessionSchemas } from '../../session/types';
 import { createProcessApiRequest } from '../core/processApiRequest';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { AuthorizationIssueHandlerConfiguration } from './AuthorizationIssueHandlerConfiguration';
@@ -36,7 +36,7 @@ export const AUTHORIZATION_ISSUE_PATH = '/api/authorization/issue';
  * This class configures the handling of authorization issue requests.
  */
 export class AuthorizationIssueHandlerConfigurationImpl<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > implements AuthorizationIssueHandlerConfiguration
 {
   /** The path for the authorization issue endpoint. */

@@ -15,14 +15,14 @@
  * License.
  */
 
+import { z } from 'zod';
 import { BuildAuthorizationPageModel } from '@vecrea/au3te-ts-common/handler.authorization-page';
 import { AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { ClearCurrentUserInfoInSessionIfNecessary } from './clearCurrentUserInfoInSessionIfNecessary';
 import { BuildResponse } from './buildResponse';
 import { ResponseToDecisionParams } from './responseToDecisionParams';
-import { User, Client } from '@vecrea/au3te-ts-common/schemas.common';
 import { AuthorizationDecisionParams } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
 
 /**
@@ -33,7 +33,7 @@ import { AuthorizationDecisionParams } from '@vecrea/au3te-ts-common/schemas.aut
  * @returns {Promise<Response>} A promise that resolves to a Response object
  */
 export type GenerateAuthorizationPage<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = (
   response: AuthorizationResponse,
@@ -46,7 +46,7 @@ export type GenerateAuthorizationPage<
  * @template SS - The type of SessionSchemas
  */
 export type CreateGenerateAuthorizationPageParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = {
   /** Function to convert response to decision parameters */
   responseToDecisionParams: ResponseToDecisionParams;
@@ -65,7 +65,7 @@ export type CreateGenerateAuthorizationPageParams<
  * @returns {GenerateAuthorizationPage<SS>} A function that generates an authorization page
  */
 export const createGenerateAuthorizationPage =
-  <SS extends SessionSchemas, OPTS = unknown>({
+  <SS extends DefaultSessionSchemas, OPTS = unknown>({
     responseToDecisionParams,
     clearCurrentUserInfoInSessionIfNecessary,
     buildAuthorizationPageModel,
@@ -80,21 +80,20 @@ export const createGenerateAuthorizationPage =
     ) as AuthorizationDecisionParams;
     const { acrs, client } = response;
 
-    await session.setBatch(
-      {
-        authorizationDecisionParams,
-        acrs: (acrs ?? undefined) as string[] | undefined,
-        client: (client ?? undefined) as Client | undefined,
-      } as never
-    );
+    await session.setBatch({
+      authorizationDecisionParams:
+        authorizationDecisionParams as z.output<SS['authorizationDecisionParams']>,
+      acrs: (acrs ?? undefined) as z.output<SS['acrs']> | undefined,
+      client: (client ?? undefined) as z.output<SS['client']> | undefined,
+    });
     await clearCurrentUserInfoInSessionIfNecessary(response, session);
-    const user = (await session.get('user')) as User | undefined;
+    const user = await session.get('user');
 
     const model = buildAuthorizationPageModel(response, user);
 
     await session.set(
       'authorizationPageModel',
-      model as never
+      model as z.output<SS['authorizationPageModel']>
     );
 
     return buildResponse(model);

@@ -33,7 +33,7 @@ import {
   ClientRegistrationResponse,
   clientRegistrationResponseSchema,
 } from '@vecrea/au3te-ts-common/schemas.client-registration';
-import { SessionSchemas } from '@/session';
+import type { DefaultSessionSchemas } from '@/session';
 import {
   CreateProcessApiResponse,
   createProcessApiResponse,
@@ -71,7 +71,7 @@ export interface ClientRegistrationHandlerConfigurationImplOverrides {
  * @template SS - The type of the session schemas.
  */
 export interface ClientRegistrationHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > {
   /**
    * The API method to be used for the client registration request.
@@ -102,7 +102,7 @@ export interface ClientRegistrationHandlerConfigurationImplConstructorParams<
  * @template SS - The type of the session schemas.
  */
 export class ClientRegistrationHandlerConfigurationImpl<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > implements ClientRegistrationHandlerConfiguration
 {
   /**

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CredentialSingleParseHandlerConfigurationImpl } from '../CredentialSingleParseHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
-import { SessionSchemas } from '../../../session/types';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('CredentialSingleParseHandlerConfigurationImpl', () => {
   // Mock API client
@@ -13,7 +13,7 @@ describe('CredentialSingleParseHandlerConfigurationImpl', () => {
   // Use SessionSchemas as the type parameter
   const mockServerConfig = {
     apiClient: mockApiClient,
-  } as ServerHandlerConfiguration<SessionSchemas>;
+  } as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   it('should initialize with required properties', () => {
     const config = new CredentialSingleParseHandlerConfigurationImpl(

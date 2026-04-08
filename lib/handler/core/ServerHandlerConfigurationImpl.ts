@@ -5,7 +5,7 @@ import {
   RecoverResponseResult,
 } from './recoverResponseResult';
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
 import { defaultPrepareHeaders, PrepareHeaders } from './prepareHeaders';
 import { defaultResponseFactory, ResponseFactory } from './responseFactory';
@@ -16,11 +16,11 @@ import {
 
 /**
  * Implementation of the ServerHandlerConfiguration interface.
- * @template SS - The type of session schemas, extending SessionSchemas.
+ * @template SS - Session schemas extending {@link DefaultSessionSchemas}.
  * @extends {CommonHandlerConfigurationImpl}
  * @implements {ServerHandlerConfiguration<SS>}
  */
-export class ServerHandlerConfigurationImpl<SS extends SessionSchemas>
+export class ServerHandlerConfigurationImpl<SS extends DefaultSessionSchemas>
   extends CommonHandlerConfigurationImpl
   implements ServerHandlerConfiguration<SS>
 {

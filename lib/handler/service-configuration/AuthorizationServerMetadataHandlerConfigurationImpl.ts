@@ -27,14 +27,16 @@ import {
 import { ProcessApiResponse } from '../core/processApiResponse';
 import { createProcessApiResponse } from './processApiResponse';
 import { Handle, createHandle } from '../core/handle';
-import { SessionSchemas } from '../../session/types';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { ServiceConfigurationHandlerConfiguration } from './ServiceConfigurationHandlerConfiguration';
 import { ToApiRequest } from '../core/toApiRequest';
 import { ProcessRequest } from '../core/processRequest';
 import { defaultToApiRequest } from './toApiRequest';
 import { createProcessRequest } from '../core/processRequest';
-import { defaultSessionSchemas } from '../../session/sessionSchemas';
+import {
+  defaultSessionSchemas,
+  type DefaultSessionSchemas,
+} from '../../session/sessionSchemas';
 
 /** The path for the service configuration endpoint */
 export const AUTHORIZATION_SERVER_METADATA_PATH = '/.well-known/oauth-authorization-server';
@@ -44,7 +46,7 @@ export const AUTHORIZATION_SERVER_METADATA_PATH = '/.well-known/oauth-authorizat
  * This class configures the handling of service configuration requests.
  */
 export class AuthorizationServerMetadataHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof defaultSessionSchemas
+  SS extends DefaultSessionSchemas = typeof defaultSessionSchemas
 > implements ServiceConfigurationHandlerConfiguration
 {
   /** The path for the service configuration endpoint. */

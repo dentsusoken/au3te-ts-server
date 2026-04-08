@@ -22,7 +22,7 @@ import {
 import { ProcessApiRequest } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
 import { HandleWithOptions } from '../core/handleWithOptions';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { GenerateAuthorizationPage } from './generateAuthorizationPage';
 import { HandleNoInteraction } from './handleNoInteraction';
 import { ResponseToDecisionParams } from './responseToDecisionParams';
@@ -43,7 +43,7 @@ import { ApiRequestWithOptions, ApiResponseWithOptions } from '../core';
  * @template OPTS - The type of options accepted by the handler.
  */
 export interface AuthorizationHandlerConfiguration<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > {
   /**

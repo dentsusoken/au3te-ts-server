@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { z } from 'zod';
 import { InMemorySession } from '../InMemorySession';
 import { defaultSessionSchemas } from '../sessionSchemas';
-
 describe('InMemorySession', () => {
   let session: InMemorySession<TestSchemas>;
 

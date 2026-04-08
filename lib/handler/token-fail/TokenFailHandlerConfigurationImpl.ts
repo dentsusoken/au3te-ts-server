@@ -15,6 +15,7 @@
  * License.
  */
 
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import {
   TokenFailRequest,
   TokenFailResponse,
@@ -24,7 +25,6 @@ import { ProcessApiRequest } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
 import { createProcessApiResponse } from './processApiResponse';
 import { Handle, createHandle } from '../core/handle';
-import { SessionSchemas } from '../../session/types';
 import { createProcessApiRequest } from '../core/processApiRequest';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { TokenFailHandlerConfiguration } from './TokenFailHandlerConfiguration';
@@ -60,10 +60,10 @@ export class TokenFailHandlerConfigurationImpl
 
   /**
    * Creates an instance of TokenFailHandlerConfigurationImpl.
-   * @param {ServerHandlerConfiguration<SessionSchemas>} serverHandlerConfiguration - The server handler configuration.
+   * @param {ServerHandlerConfiguration<DefaultSessionSchemas>} serverHandlerConfiguration - The server handler configuration.
    */
   constructor(
-    serverHandlerConfiguration: ServerHandlerConfiguration<SessionSchemas>
+    serverHandlerConfiguration: ServerHandlerConfiguration<DefaultSessionSchemas>
   ) {
     const {
       apiClient,

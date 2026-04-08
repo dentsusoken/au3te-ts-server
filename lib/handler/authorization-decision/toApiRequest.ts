@@ -19,10 +19,7 @@ import { AuthorizationIssueRequest } from '@vecrea/au3te-ts-common/schemas.autho
 import { ExtractParameters } from '../../extractor/extractParameters';
 import { ToApiRequest } from '../core/toApiRequest';
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
-import { DefaultSessionSchemas } from '../../session/sessionSchemas';
-import { AuthorizationDecisionParams } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
-import { Client } from '@vecrea/au3te-ts-common/schemas.common';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { GetOrAuthenticateUser } from './getOrAuthenticateUser';
 import { parseQueryString } from '@vecrea/au3te-ts-common/utils';
 import { BuildAuthorizationFailError } from '../authorization-fail/buildAuthorizationFailError';
@@ -32,9 +29,9 @@ import { ResponseErrorFactory } from '../core/responseErrorFactory';
 
 /**
  * Parameters required to create an API request handler
- * @template SS - Session schema type extending SessionSchemas
+ * @template SS - Session schema bundle extending {@link DefaultSessionSchemas}
  */
-export type CreateToApiRequestParams<SS extends SessionSchemas> = {
+export type CreateToApiRequestParams<SS extends DefaultSessionSchemas> = {
   session: Session<SS>;
   extractParameters: ExtractParameters;
   getOrAuthenticateUser: GetOrAuthenticateUser;
@@ -50,7 +47,7 @@ export type CreateToApiRequestParams<SS extends SessionSchemas> = {
  * @returns {ToApiRequest<AuthorizationIssueRequest>} Function that processes requests into AuthorizationIssueRequest
  */
 export const createToApiRequest =
-  <SS extends SessionSchemas>({
+  <SS extends DefaultSessionSchemas>({
     session,
     extractParameters,
     getOrAuthenticateUser,
@@ -60,15 +57,12 @@ export const createToApiRequest =
     responseErrorFactory,
   }: CreateToApiRequestParams<SS>): ToApiRequest<AuthorizationIssueRequest> =>
   async (request: Request): Promise<AuthorizationIssueRequest> => {
-    const { authorizationDecisionParams, acrs, client } = (await session.deleteBatch(
-      'authorizationDecisionParams',
-      'acrs',
-      'client'
-    )) as {
-      authorizationDecisionParams?: AuthorizationDecisionParams;
-      acrs?: string[] | null;
-      client?: Client | null;
-    };
+    const { authorizationDecisionParams, acrs, client } =
+      await session.deleteBatch(
+        'authorizationDecisionParams',
+        'acrs',
+        'client'
+      );
 
     if (!authorizationDecisionParams) {
       throw responseErrorFactory.badRequestResponseError(
@@ -84,10 +78,7 @@ export const createToApiRequest =
       throw await buildAuthorizationFailError(ticket, 'DENIED');
     }
 
-    const { user, authTime } = await getOrAuthenticateUser(
-      session as unknown as Session<DefaultSessionSchemas>,
-      parameters
-    );
+    const { user, authTime } = await getOrAuthenticateUser(session, parameters);
 
     const subject = user?.subject;
 

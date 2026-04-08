@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AuthorizationHandlerConfigurationImpl } from '../AuthorizationHandlerConfigurationImpl';
 import type { AuthorizationHandlerConfigurationImplOverrides } from '../AuthorizationHandlerConfigurationImpl';
-import type { SessionSchemas } from '../../../session/types';
 import type { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import type { AuthorizationIssueHandlerConfiguration } from '../../authorization-issue/AuthorizationIssueHandlerConfiguration';
 import type { AuthorizationFailHandlerConfiguration } from '../../authorization-fail/AuthorizationFailHandlerConfiguration';
@@ -20,6 +19,7 @@ import type {
 import type { CreateProcessApiResponseParams4Authorization } from '../processApiResponse';
 import type { ApiResponseWithOptions } from '../../core/types';
 import { FederationManager } from '@/federation/FederationManager';
+import type { DefaultSessionSchemas } from '../../../session/sessionSchemas';
 
 type TestHandleOptions = {
   traceId: string;
@@ -61,7 +61,7 @@ const createDependencies = () => {
       (path: string, action: string) => `${path}:${action}`
     ),
     prepareHeaders: vi.fn(),
-  } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   const authorizationIssueHandlerConfiguration = {
     handle: vi.fn(async () => new Response(null, { status: 204 })),
@@ -95,11 +95,14 @@ const createDependencies = () => {
 
 const createConfig = (
   overrides?: AuthorizationHandlerConfigurationImplOverrides<
-    SessionSchemas,
+    DefaultSessionSchemas,
     TestHandleOptions
   >
 ) =>
-  new AuthorizationHandlerConfigurationImpl<SessionSchemas, TestHandleOptions>({
+  new AuthorizationHandlerConfigurationImpl<
+    DefaultSessionSchemas,
+    TestHandleOptions
+  >({
     ...createDependencies(),
     overrides,
   });
@@ -218,7 +221,7 @@ describe('AuthorizationHandlerConfigurationImpl', () => {
     const createProcessApiResponseOverride = vi.fn(
       (
         _params: CreateProcessApiResponseParams4Authorization<
-          SessionSchemas,
+          DefaultSessionSchemas,
           TestHandleOptions
         >
       ): ProcessApiResponse<

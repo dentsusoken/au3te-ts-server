@@ -32,7 +32,6 @@ import {
   CreateHandleWithOptionsParams,
 } from '../core/handleWithOptions';
 import { ApiResponseWithOptions } from '../core/types';
-import { SessionSchemas } from '../../session/types';
 import {
   createGenerateAuthorizationPage,
   GenerateAuthorizationPage,
@@ -80,6 +79,7 @@ import { createProcessRequestWithOptions } from '../core/processRequestWithOptio
 import { ApiRequestWithOptions } from '../core/types';
 import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
 import { FederationManager } from '@/federation/FederationManager';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 
 /**
  * Parameters for constructing AuthorizationHandlerConfigurationImpl.
@@ -87,7 +87,7 @@ import { FederationManager } from '@/federation/FederationManager';
  * @template OPTS - The type of handler options.
  */
 export type AuthorizationHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = {
   /** Server handler configuration */
@@ -112,24 +112,24 @@ export type ProcessApiRequestFactory = (
 ) => ProcessApiRequest<AuthorizationRequest, AuthorizationResponse>;
 
 export type ClearCurrentUserInfoInSessionIfNecessaryFactory<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = (
   params: CreateClearCurrentUserInfoInSessionIfNecessaryParams<SS>
 ) => ClearCurrentUserInfoInSessionIfNecessary<SS>;
 
 export type GenerateAuthorizationPageFactory<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = (
   params: CreateGenerateAuthorizationPageParams<SS>
 ) => GenerateAuthorizationPage<SS, OPTS>;
 
-export type HandleNoInteractionFactory<SS extends SessionSchemas> = (
+export type HandleNoInteractionFactory<SS extends DefaultSessionSchemas> = (
   params: CreateHandleNoInteractionParams
 ) => HandleNoInteraction<SS>;
 
 export type ProcessApiResponseFactory<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = (
   params: CreateProcessApiResponseParams4Authorization<SS, OPTS>
@@ -155,7 +155,7 @@ export type ProcessRequestFactory<OPTS = unknown> = (
 ) => ProcessRequestWithOptions<OPTS>;
 
 export type AuthorizationHandlerConfigurationImplOverrides<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = {
   createProcessApiRequest?: ProcessApiRequestFactory;
@@ -201,7 +201,7 @@ export const AUTHORIZATION_PATH = '/api/authorization';
  * @implements {AuthorizationHandlerConfiguration<SS, OPTS>}
  */
 export class AuthorizationHandlerConfigurationImpl<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > implements AuthorizationHandlerConfiguration<SS, OPTS>
 {

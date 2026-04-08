@@ -3,15 +3,15 @@ import { CommonHandlerConfigurationImpl } from '@vecrea/au3te-ts-common/handler'
 import { ServerHandlerConfigurationImpl } from '../ServerHandlerConfigurationImpl';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
 import { Session } from '../../../session/Session';
-import { SessionSchemas } from '../../../session/types';
 import { defaultPrepareHeaders } from '../prepareHeaders';
 import { defaultResponseFactory } from '../responseFactory';
+import { DefaultSessionSchemas } from '@/session';
 
 // Mock ApiClient and Session
 const mockApiClient = {
   pushAuthorizationRequestPath: 'pushAuthorizationRequestPath',
 } as ApiClient;
-const mockSession = {} as Session<SessionSchemas>;
+const mockSession = {} as Session<DefaultSessionSchemas>;
 
 describe('ServerHandlerConfigurationImpl', () => {
   // Test constructor

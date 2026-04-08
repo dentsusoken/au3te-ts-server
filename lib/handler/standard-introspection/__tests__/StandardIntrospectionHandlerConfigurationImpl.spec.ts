@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { StandardIntrospectionHandlerConfigurationImpl } from '../StandardIntrospectionHandlerConfigurationImpl';
 import type { StandardIntrospectionHandlerConfigurationImplOverrides } from '../StandardIntrospectionHandlerConfigurationImpl';
 import type { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
-import type { SessionSchemas } from '../../../session/types';
 import type { ExtractorConfiguration } from '../../../extractor/ExtractorConfiguration';
 import type { ResourceServerHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.resourceServer';
 import {
@@ -16,6 +15,7 @@ import {
   StandardIntrospectionRequest,
   StandardIntrospectionResponse,
 } from '@vecrea/au3te-ts-common/schemas.standard-introspection';
+import { DefaultSessionSchemas } from '@/session';
 
 const createDependencies = () => {
   const serverHandlerConfiguration = {
@@ -36,7 +36,7 @@ const createDependencies = () => {
     },
     recoverResponseResult: vi.fn(),
     buildUnknownActionMessage: vi.fn(),
-  } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   const extractorConfiguration = {
     extractClientCredentials: vi.fn(),

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { TokenCreateHandlerConfigurationImpl } from '../TokenCreateHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '@/handler/core/ServerHandlerConfiguration';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
-import { SessionSchemas } from '@/session/types';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('TokenCreateHandlerConfigurationImpl', () => {
   // Mock API client
@@ -13,7 +13,7 @@ describe('TokenCreateHandlerConfigurationImpl', () => {
   // Use SessionSchemas as the type parameter
   const mockServerConfig = {
     apiClient: mockApiClient,
-  } as ServerHandlerConfiguration<SessionSchemas>;
+  } as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   it('should initialize with required properties', () => {
     const config = new TokenCreateHandlerConfigurationImpl(mockServerConfig);

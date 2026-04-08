@@ -24,7 +24,7 @@ import {
   GetOrAuthenticateUserFactory,
 } from './getOrAuthenticateUser';
 import { CreateToApiRequestParams } from './toApiRequest';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
@@ -66,7 +66,7 @@ export type AuthorizationDecisionHandlerOverrideFactories<
   T extends keyof Omit<U, 'loginId' | 'password'> = never
 > = {
   createToApiRequest?: (
-    params: CreateToApiRequestParams<SessionSchemas>
+    params: CreateToApiRequestParams<DefaultSessionSchemas>
   ) => ToApiRequest<AuthorizationIssueRequest>;
   createProcessRequest?: (
     params: CreateProcessRequestParams<AuthorizationIssueRequest>

@@ -15,22 +15,21 @@
  * License.
  */
 
+import { z } from 'zod';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 import { Session } from '../../session/Session';
 import {
   GetByCredentials,
   CacheUserAttributes,
 } from '@vecrea/au3te-ts-common/handler.user';
-import { DefaultSessionSchemas } from '../../session/sessionSchemas';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 
 /**
- * Type definition for a function that retrieves or authenticates a user
- * @param {Session<SessionSchemas>} session - Session object to store/retrieve user data
- * @param {Record<string, string>} parameters - Request parameters containing login credentials
- * @returns {Promise<{user: User | undefined; authTime: number | undefined}>} User data and auth time if successful, undefined if not
+ * Type definition for a function that retrieves or authenticates a user.
+ * Polymorphic over extended session schema bundles (see {@link DefaultSessionSchemas}).
  */
-export type GetOrAuthenticateUser = (
-  session: Session<DefaultSessionSchemas>,
+export type GetOrAuthenticateUser = <SS extends DefaultSessionSchemas>(
+  session: Session<SS>,
   parameters: Record<string, string>
 ) => Promise<{ user: User | undefined; authTime: number | undefined }>;
 
@@ -60,7 +59,10 @@ export const createGetOrAuthenticateUser =
     getByCredentials: GetByCredentials<U, T>,
     cacheUserAttributes: CacheUserAttributes<U>
   ): GetOrAuthenticateUser =>
-  async (session, parameters) => {
+  async <SS extends DefaultSessionSchemas>(
+    session: Session<SS>,
+    parameters: Record<string, string>
+  ) => {
     const { user, authTime } = await session.getBatch('user', 'authTime');
 
     if (user && authTime) {
@@ -79,8 +81,8 @@ export const createGetOrAuthenticateUser =
       const authTime = Math.floor(Date.now() / 1000);
 
       await session.setBatch({
-        user: loginUser,
-        authTime,
+        user: loginUser as z.output<SS['user']>,
+        authTime: authTime as z.output<SS['authTime']>,
       });
 
       await cacheUserAttributes(loginUser, 'oidc', 300);

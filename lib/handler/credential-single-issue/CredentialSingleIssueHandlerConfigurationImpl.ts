@@ -19,8 +19,10 @@ import { ExtractorConfiguration } from '../../extractor/ExtractorConfiguration';
 import { ServerCredentialHandlerConfiguration } from '../credential/ServerCredentialHandlerConfiguration';
 import { IntrospectionHandlerConfiguration } from '../introspection/IntrospectionHandlerConfiguration';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
-import { SessionSchemas } from '../../session';
-import { defaultSessionSchemas } from '../../session/sessionSchemas';
+import {
+  defaultSessionSchemas,
+  type DefaultSessionSchemas,
+} from '../../session/sessionSchemas';
 import { createToApiRequest } from './toApiRequest';
 import { CredentialSingleParseHandlerConfiguration } from '../credential-single-parse/CredentialSingleParseHandlerConfiguration';
 import { CommonCredentialHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.credential';
@@ -31,7 +33,7 @@ import { createHandleWithOptions } from '../core/handleWithOptions';
 import { createProcessRequestWithOptions } from '../core/processRequestWithOptions';
 
 type CreateCredentialSingleIssueHandlerConfigurationImplParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = {
   extractorConfiguration: ExtractorConfiguration;
   serverCredentialHandlerConfiguration: ServerCredentialHandlerConfiguration;
@@ -53,7 +55,7 @@ export const CREDENTIAL_SINGLE_ISSUE_PATH = '/api/credential';
  * @implements {CredentialSingleIssueHandlerConfiguration}
  */
 export class CredentialSingleIssueHandlerConfigurationImpl<
-  SS extends SessionSchemas = typeof defaultSessionSchemas
+  SS extends DefaultSessionSchemas = typeof defaultSessionSchemas
 > {
   readonly path = CREDENTIAL_SINGLE_ISSUE_PATH;
 

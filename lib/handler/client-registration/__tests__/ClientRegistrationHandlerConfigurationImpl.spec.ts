@@ -3,7 +3,7 @@ import { ClientRegistrationHandlerConfigurationImpl } from '../ClientRegistratio
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import { ExtractorConfiguration } from '../../../extractor/ExtractorConfiguration';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
-import { SessionSchemas } from '../../../session/types';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('ClientRegistrationHandlerConfigurationImpl', () => {
   // Mock API Client
@@ -18,7 +18,7 @@ describe('ClientRegistrationHandlerConfigurationImpl', () => {
     responseErrorFactory: {},
     buildUnknownActionMessage: vi.fn(),
     recoverResponseResult: vi.fn(),
-  } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   // Mock Extractor Configuration
   const mockExtractorConfig = {
@@ -34,7 +34,7 @@ describe('ClientRegistrationHandlerConfigurationImpl', () => {
       extractorConfiguration: mockExtractorConfig,
     });
 
-    expect(config.path).toBe('/connect/register/:clientId');
+    expect(config.path).toBe('/api/register/:clientId');
     expect(config.processApiRequest).toBeDefined();
     expect(config.processApiResponse).toBeDefined();
     expect(config.handle).toBeDefined();

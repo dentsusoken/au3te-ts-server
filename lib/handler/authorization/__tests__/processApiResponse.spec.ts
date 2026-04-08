@@ -5,11 +5,11 @@ import { defaultResponseFactory } from '../../core/responseFactory';
 import { createResponseErrorFactory } from '../../core/responseErrorFactory';
 import { ResponseError } from '../../core/ResponseError';
 import { Session } from '../../../session/Session';
-import { SessionSchemas } from '../../../session/types';
 import { ApiResponseWithOptions } from '../../core/types';
+import { DefaultSessionSchemas } from '@/session';
 
 // Mock dependencies
-const mockSession = {} as Session<SessionSchemas>;
+const mockSession = {} as Session<DefaultSessionSchemas>;
 const mockGenerateAuthorizationPage = vi.fn();
 const mockHandleNoInteraction = vi.fn();
 const mockBuildUnknownActionMessage = vi.fn();

@@ -18,9 +18,9 @@
 import { z } from 'zod';
 
 /**
- * Represents a record of Zod schemas for session data.
- * Each key in the record corresponds to a session data field,
- * and its value is a Zod schema defining the structure and validation rules for that field.
+ * Loose index signature for arbitrary session field schemas (e.g. `satisfies` checks).
+ * Handlers and Session use `DefaultSessionSchemas` from `./sessionSchemas` so
+ * per-key output types stay precise under Zod v4.
  */
 export type SessionSchemas = Record<string, z.ZodTypeAny>;
 

@@ -21,7 +21,7 @@ import { GenerateAuthorizationPage } from './generateAuthorizationPage';
 import { HandleNoInteraction } from './handleNoInteraction';
 import { CreateProcessApiResponseParams } from '../core/processApiResponse';
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { ApiResponseWithOptions } from '../core';
 
 /**
@@ -29,7 +29,7 @@ import { ApiResponseWithOptions } from '../core';
  * @template SS - The type of SessionSchemas
  */
 export type CreateProcessApiResponseParams4Authorization<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   OPTS = unknown
 > = {
   /** The session object */
@@ -48,7 +48,7 @@ export type CreateProcessApiResponseParams4Authorization<
  * @returns {ProcessApiResponse<AuthorizationResponse, OPTS>} A function that processes Authorization API responses
  */
 export const createProcessApiResponse =
-  <SS extends SessionSchemas, OPTS = unknown>({
+  <SS extends DefaultSessionSchemas, OPTS = unknown>({
     path,
     session,
     generateAuthorizationPage,

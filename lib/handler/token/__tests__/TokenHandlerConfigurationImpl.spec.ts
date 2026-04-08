@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { TokenHandlerConfigurationImpl } from '../TokenHandlerConfigurationImpl';
 import { ServerHandlerConfiguration } from '../../core/ServerHandlerConfiguration';
 import { ApiClient } from '@vecrea/au3te-ts-common/api';
-import { SessionSchemas } from '../../../session/types';
 import { UserHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.user';
 import { TokenFailHandlerConfiguration } from '../../token-fail/TokenFailHandlerConfiguration';
 import { TokenIssueHandlerConfiguration } from '../../token-issue/TokenIssueHandlerConfiguration';
 import { TokenCreateHandlerConfiguration } from '../../token-create/TokenCreateHandlerConfiguration';
 import { ExtractorConfiguration } from '../../../extractor/ExtractorConfiguration';
+import { DefaultSessionSchemas } from '@/session';
 
 describe('TokenHandlerConfigurationImpl', () => {
   // Mock API client
@@ -18,7 +18,7 @@ describe('TokenHandlerConfigurationImpl', () => {
   // Mock base configuration
   const mockServerConfig = {
     apiClient: mockApiClient,
-  } as unknown as ServerHandlerConfiguration<SessionSchemas>;
+  } as unknown as ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   // Mock user configuration
   const mockUserConfig = {

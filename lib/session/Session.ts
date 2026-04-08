@@ -16,12 +16,12 @@
  */
 
 import { z } from 'zod';
-import { SessionSchemas, ParsedSessionData } from './types';
+import { ParsedSessionData, SessionSchemas } from './types';
 
 /**
  * Represents a session that can store and retrieve key-value pairs.
  *
- * @template T - An object type extending SessionSchemas, defining the structure of the session data.
+ * @template T - Zod schemas per session key. Production handlers use {@link DefaultSessionSchemas}.
  */
 export interface Session<T extends SessionSchemas> {
   /**

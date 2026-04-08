@@ -36,12 +36,12 @@ import {
   GetByCredentials,
 } from '@vecrea/au3te-ts-common/handler.user';
 import { AuthorizationHandlerConfiguration } from '../authorization/AuthorizationHandlerConfiguration';
-import { SessionSchemas } from '../../session/types';
 import { AuthorizationFailHandlerConfiguration } from '../authorization-fail';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 
 export type CreateAuthorizationDecisionHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   U extends User,
   T extends keyof Omit<U, 'loginId' | 'password'>,
   OPTS = unknown
@@ -78,7 +78,7 @@ export const AUTHORIZATION_DECISION_PATH = '/api/authorization/decision';
  * @implements {AuthorizationDecisionHandlerConfiguration}
  */
 export class AuthorizationDecisionHandlerConfigurationImpl<
-  SS extends SessionSchemas,
+  SS extends DefaultSessionSchemas,
   U extends User,
   T extends keyof Omit<U, 'loginId' | 'password'>,
   OPTS = unknown

@@ -16,13 +16,13 @@
  */
 
 import { z } from 'zod';
-import { SessionSchemas, StoredSessionData, ParsedSessionData } from './types';
+import { StoredSessionData, ParsedSessionData, SessionSchemas } from './types';
 import { Session } from './Session';
 
 /**
  * In-memory implementation of the Session interface.
  *
- * @template T - An object type extending SessionSchemas, defining the structure of the session data.
+ * @template T - Zod schemas per session key. Production code typically uses {@link DefaultSessionSchemas}.
  */
 export class InMemorySession<T extends SessionSchemas> implements Session<T> {
   private data: StoredSessionData<T> = {};
@@ -52,7 +52,9 @@ export class InMemorySession<T extends SessionSchemas> implements Session<T> {
     }
 
     const parsedJson = JSON.parse(value);
-    return this.schemas[key].parse(parsedJson);
+    return (this.schemas[key] as z.ZodTypeAny).parse(parsedJson) as z.output<
+      T[K]
+    >;
   }
 
   /**

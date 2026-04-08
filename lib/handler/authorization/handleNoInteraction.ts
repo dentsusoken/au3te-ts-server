@@ -18,12 +18,12 @@
 import { AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { AuthorizationIssueRequest } from '@vecrea/au3te-ts-common/schemas.authorization-issue';
 import { Session } from '../../session/Session';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import { CheckAuthAge } from './checkAuthAge';
 import { BuildAuthorizationFailError } from '../authorization-fail/buildAuthorizationFailError';
 import { CheckSubject } from './checkSubject';
 import { CalcSub } from './calcSub';
 import { Handle } from '../core/handle';
-import { SessionSchemas } from '../../session/types';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
 
 /**
@@ -33,7 +33,7 @@ import { User } from '@vecrea/au3te-ts-common/schemas.common';
  * @param {Session<SS>} session - The session object
  * @returns {Promise<Response>} A promise that resolves to a Response object
  */
-export type HandleNoInteraction<SS extends SessionSchemas> = (
+export type HandleNoInteraction<SS extends DefaultSessionSchemas> = (
   response: AuthorizationResponse,
   session: Session<SS>
 ) => Promise<Response>;
@@ -55,7 +55,7 @@ export type CreateHandleNoInteractionParams = {
  * @param {CreateHandleNoInteractionParams} params - The parameters for creating the function
  * @returns {HandleNoInteraction<SS>} A function that handles no interaction authorization
  */
-export const createHandleNoInteraction = <SS extends SessionSchemas>({
+export const createHandleNoInteraction = <SS extends DefaultSessionSchemas>({
   checkAuthAge,
   checkSubject,
   calcSub,

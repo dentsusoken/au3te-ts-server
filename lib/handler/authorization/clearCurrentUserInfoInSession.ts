@@ -16,8 +16,10 @@
  */
 
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
-import { defaultSessionSchemas } from '../../session/sessionSchemas';
+import {
+  defaultSessionSchemas,
+  type DefaultSessionSchemas,
+} from '../../session/sessionSchemas';
 
 /**
  * Type definition for a function that clears current user information from the session.
@@ -25,7 +27,7 @@ import { defaultSessionSchemas } from '../../session/sessionSchemas';
  * @param {Session<SS>} session - The session object to clear user information from
  * @returns {Promise<void>} A promise that resolves when the operation is complete
  */
-export type ClearCurrentUserInfoInSession<SS extends SessionSchemas> = (
+export type ClearCurrentUserInfoInSession<SS extends DefaultSessionSchemas> = (
   session: Session<SS>
 ) => Promise<void>;
 

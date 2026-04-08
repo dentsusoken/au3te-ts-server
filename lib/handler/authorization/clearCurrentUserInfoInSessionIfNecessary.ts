@@ -20,7 +20,7 @@ import { CheckPrompts } from './checkPrompts';
 import { CheckAuthAge } from './checkAuthAge';
 import { ClearCurrentUserInfoInSession } from './clearCurrentUserInfoInSession';
 import { Session } from '../../session/Session';
-import { SessionSchemas } from '../../session/types';
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 
 /**
  * Type definition for a function that clears current user information from the session if necessary.
@@ -30,7 +30,7 @@ import { SessionSchemas } from '../../session/types';
  * @returns {Promise<void>} A promise that resolves when the operation is complete
  */
 export type ClearCurrentUserInfoInSessionIfNecessary<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = (response: AuthorizationResponse, session: Session<SS>) => Promise<void>;
 
 /**
@@ -38,7 +38,7 @@ export type ClearCurrentUserInfoInSessionIfNecessary<
  * @template SS - The type of SessionSchemas
  */
 export type CreateClearCurrentUserInfoInSessionIfNecessaryParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > = {
   /** Function to check prompts */
   checkPrompts: CheckPrompts;
@@ -55,7 +55,7 @@ export type CreateClearCurrentUserInfoInSessionIfNecessaryParams<
  * @returns {ClearCurrentUserInfoInSessionIfNecessary<SS>} A function that clears current user information if necessary
  */
 export const createClearCurrentUserInfoInSessionIfNecessary =
-  <SS extends SessionSchemas>({
+  <SS extends DefaultSessionSchemas>({
     checkPrompts,
     checkAuthAge,
     clearCurrentUserInfoInSession,

@@ -33,7 +33,7 @@ import {
   ToApiRequest,
 } from '../core';
 import { StandardIntrospectionHandlerConfiguration } from './StandardIntrospectionHandlerConfiguration';
-import { SessionSchemas } from '@/session';
+import type { DefaultSessionSchemas } from '@/session';
 import { createToApiRequest, CreateToApiRequest } from './toApiRequest';
 import { ExtractorConfiguration } from '@/extractor';
 import { ResourceServerHandlerConfiguration } from '@vecrea/au3te-ts-common/handler.resourceServer';
@@ -74,7 +74,7 @@ export interface StandardIntrospectionHandlerConfigurationImplOverrides {
  * @property {StandardIntrospectionHandlerConfigurationImplOverrides} [overrides] - Overrides for internal factories.
  */
 export interface StandardIntrospectionHandlerConfigurationImplConstructorParams<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > {
   serverHandlerConfiguration: ServerHandlerConfiguration<SS>;
   extractorConfiguration: ExtractorConfiguration;
@@ -89,7 +89,7 @@ export interface StandardIntrospectionHandlerConfigurationImplConstructorParams<
  * @template SS - The type of session schemas.
  */
 export class StandardIntrospectionHandlerConfigurationImpl<
-  SS extends SessionSchemas
+  SS extends DefaultSessionSchemas
 > implements StandardIntrospectionHandlerConfiguration
 {
   readonly path = STANDARD_INTROSPECTION_PATH;

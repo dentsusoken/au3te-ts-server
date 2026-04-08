@@ -38,8 +38,6 @@ describe('createProcessSaml2Response', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset console.log mock
-    vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   describe('POST binding', () => {
@@ -138,9 +136,9 @@ describe('createProcessSaml2Response', () => {
     });
 
     // Given: POST request with SAMLResponse
-    // When: parseLoginResponse throws error
-    // Then: Error is logged and then re-thrown as SAMLResponse error
-    it('should log error when parseLoginResponse fails in POST request', async () => {
+    // When: parseLoginResponse rejects
+    // Then: That rejection propagates to the caller
+    it('should propagate error when parseLoginResponse fails in POST request', async () => {
       const config = createMockConfig();
       const mockSp = (config as any).mockSp;
       const parseError = new Error('Parse error');
@@ -156,12 +154,8 @@ describe('createProcessSaml2Response', () => {
         body: formData,
       });
 
-      // Note: Current implementation logs error and then continues to GET handling
-      // which throws "SAMLResponse is not included in response" error
-      await expect(processSaml2Response(request)).rejects.toThrow(
-        'SAMLResponse is not included in response.'
-      );
-      expect(console.log).toHaveBeenCalledWith('e :>> ', parseError);
+      await expect(processSaml2Response(request)).rejects.toThrow('Parse error');
+      expect(mockSp.parseLoginResponse).toHaveBeenCalled();
     });
   });
 

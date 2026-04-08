@@ -15,6 +15,7 @@
  * License.
  */
 
+import { z } from 'zod';
 import { OidcFederation } from '@/federation/oidc/OidcFederation';
 import { DefaultSessionSchemas, Session } from '@/session';
 import { AuthorizationPageModel } from '@vecrea/au3te-ts-common/handler.authorization-page';
@@ -98,8 +99,10 @@ export const createProcessOidcRequest = <
 
       const authTime = Math.floor(Date.now() / 1000);
 
-      await session.set('user', user as never);
-      await session.set('authTime', authTime as never);
+      await session.setBatch({
+        user: user as z.output<SS['user']>,
+        authTime: authTime as z.output<SS['authTime']>,
+      });
 
       model.user = user;
       await userHandler.addUser(user);

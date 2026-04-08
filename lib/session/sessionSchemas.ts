@@ -25,6 +25,13 @@ import { oidcCallbackParamsSchema } from '@vecrea/au3te-ts-common/schemas.federa
 import { SessionSchemas } from './types';
 import { authorizationPageModelSchema } from '@vecrea/au3te-ts-common/handler.authorization-page';
 
+/**
+ * Default session fields used by au3te-ts-server handlers.
+ * To add app-specific fields, spread this object and pass the result to {@link InMemorySession}.
+ *
+ * @example
+ * const sessionSchemas = { ...defaultSessionSchemas, myFlag: z.boolean() } satisfies SessionSchemas;
+ */
 export const defaultSessionSchemas = {
   authorizationDecisionParams: authorizationDecisionParamsSchema,
   acrs: z.array(z.string()).nullish(),
@@ -35,5 +42,5 @@ export const defaultSessionSchemas = {
   authorizationPageModel: authorizationPageModelSchema,
 } satisfies SessionSchemas;
 
-
+/** Type of {@link defaultSessionSchemas}; extend by intersection or extra keys on a spread object. */
 export type DefaultSessionSchemas = typeof defaultSessionSchemas;

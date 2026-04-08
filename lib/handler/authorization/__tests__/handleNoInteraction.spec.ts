@@ -3,7 +3,7 @@ import { createHandleNoInteraction } from '../handleNoInteraction';
 import { AuthorizationResponse } from '@vecrea/au3te-ts-common/schemas.authorization';
 import { Session } from '../../../session/Session';
 import { User } from '@vecrea/au3te-ts-common/schemas.common';
-import { SessionSchemas } from '../../../session/types';
+import { DefaultSessionSchemas } from '@/session';
 
 // Mock dependencies
 const mockCheckAuthAge = vi.fn();
@@ -33,7 +33,7 @@ describe('handleNoInteraction', () => {
   const mockGetBatch = vi.fn();
   const mockSession = {
     getBatch: mockGetBatch,
-  } as unknown as Session<SessionSchemas>;
+  } as unknown as Session<DefaultSessionSchemas>;
 
   afterEach(() => {
     vi.resetAllMocks();

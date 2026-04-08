@@ -15,6 +15,7 @@
  * License.
  */
 
+import type { DefaultSessionSchemas } from '../../session/sessionSchemas';
 import {
   TokenRequest,
   TokenResponse,
@@ -24,7 +25,6 @@ import { ProcessApiRequest } from '../core/processApiRequest';
 import { ProcessApiResponse } from '../core/processApiResponse';
 import { createProcessApiResponse } from './processApiResponse';
 import { Handle, createHandle } from '../core/handle';
-import { SessionSchemas } from '../../session/types';
 import { createProcessApiRequest } from '../core/processApiRequest';
 import { ServerHandlerConfiguration } from '../core/ServerHandlerConfiguration';
 import { TokenHandlerConfiguration } from './TokenHandlerConfiguration';
@@ -57,7 +57,7 @@ type TokenHandlerConfigurationImplConstructorParams<
   T extends keyof Omit<U, 'loginId' | 'password'> = never
 > = {
   /** Server configuration for common handler operations */
-  serverHandlerConfiguration: ServerHandlerConfiguration<SessionSchemas>;
+  serverHandlerConfiguration: ServerHandlerConfiguration<DefaultSessionSchemas>;
 
   /** Configuration for user authentication and management */
   userHandlerConfiguration: UserHandlerConfiguration<U, T>;
