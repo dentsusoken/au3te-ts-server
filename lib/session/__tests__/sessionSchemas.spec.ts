@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { InMemorySession } from '../InMemorySession';
+import { KeyedSession } from '../KeyedSession';
 import { Session } from '../Session';
 import { defaultSessionSchemas } from '../sessionSchemas';
 
-describe('InMemorySession with sessionSchemas', () => {
+describe('KeyedSession with sessionSchemas', () => {
   let session: Session<typeof defaultSessionSchemas>;
 
   beforeEach(() => {
-    session = new InMemorySession(defaultSessionSchemas);
+    session = new KeyedSession(defaultSessionSchemas);
   });
 
   it('should set and get user data', async () => {

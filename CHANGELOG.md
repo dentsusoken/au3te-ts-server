@@ -132,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Token Exchange (RFC 8693)
   - JWT Bearer Token (RFC 7523)
 - Comprehensive TypeScript support with full type definitions
-- Session management with InMemorySession
+- Session management with KeyedSession (formerly exported as InMemorySession, kept as deprecated alias)
 - Request parameter extraction utilities
 - API client for Authlete services integration
 

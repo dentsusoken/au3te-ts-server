@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { z } from 'zod';
-import { InMemorySession } from '../InMemorySession';
+import { KeyedSession } from '../KeyedSession';
+import { InMemorySessionStore } from '../InMemorySessionStore';
+import { InMemorySession } from '../index';
 import { defaultSessionSchemas } from '../sessionSchemas';
-describe('InMemorySession', () => {
-  let session: InMemorySession<TestSchemas>;
+
+describe('KeyedSession', () => {
+  let session: KeyedSession<TestSchemas>;
 
   const testSchemas = {
     user: z.object({
@@ -17,7 +20,46 @@ describe('InMemorySession', () => {
   type TestSchemas = typeof testSchemas;
 
   beforeEach(() => {
-    session = new InMemorySession(testSchemas);
+    session = new KeyedSession(testSchemas);
+  });
+
+  it('exports InMemorySession as a deprecated alias of KeyedSession', () => {
+    expect(InMemorySession).toBe(KeyedSession);
+  });
+
+  it('ephemeral mode uses empty sessionId', () => {
+    expect(session.sessionId).toBe('');
+  });
+
+  describe('keyed store mode', () => {
+    it('isolates data per sessionId', async () => {
+      const store = new InMemorySessionStore();
+      const a = new KeyedSession(testSchemas, 'id-a', store);
+      const b = new KeyedSession(testSchemas, 'id-b', store);
+      expect(a.sessionId).toBe('id-a');
+      expect(b.sessionId).toBe('id-b');
+      await a.set('count', 1);
+      await b.set('count', 2);
+      expect(await a.get('count')).toBe(1);
+      expect(await b.get('count')).toBe(2);
+    });
+
+    it('reloads the same logical session from a new instance', async () => {
+      const store = new InMemorySessionStore();
+      const first = new KeyedSession(testSchemas, 'sid', store);
+      await first.set('user', { id: 'u1', name: 'Ada' });
+      const second = new KeyedSession(testSchemas, 'sid', store);
+      expect(await second.get('user')).toEqual({ id: 'u1', name: 'Ada' });
+    });
+
+    it('uses a custom session id factory when configured', () => {
+      let n = 0;
+      const store = new InMemorySessionStore({
+        createSessionId: () => `custom-${++n}`,
+      });
+      expect(store.createSessionId()).toBe('custom-1');
+      expect(store.createSessionId()).toBe('custom-2');
+    });
   });
 
   describe('get and set', () => {
@@ -144,10 +186,9 @@ describe('InMemorySession', () => {
 
   describe('sessionSchemas', () => {
     it('should work with sessionSchemas', async () => {
-      const session = new InMemorySession(defaultSessionSchemas);
+      const s = new KeyedSession(defaultSessionSchemas);
 
-      // AuthorizationDecisionParamsをセット
-      await session.set('authorizationDecisionParams', {
+      await s.set('authorizationDecisionParams', {
         ticket: 'test-ticket',
         claimNames: ['name', 'email'],
         claimLocales: ['ja', 'en'],
@@ -156,8 +197,7 @@ describe('InMemorySession', () => {
         requestedVerifiedClaimsForTx: [{ array: ['verified1', 'verified2'] }],
       });
 
-      // 値を確認
-      const params = await session.get('authorizationDecisionParams');
+      const params = await s.get('authorizationDecisionParams');
       expect(params).toEqual({
         ticket: 'test-ticket',
         claimNames: ['name', 'email'],
@@ -167,8 +207,7 @@ describe('InMemorySession', () => {
         requestedVerifiedClaimsForTx: [{ array: ['verified1', 'verified2'] }],
       });
 
-      // deleteBatchで削除
-      const deleted = await session.deleteBatch('authorizationDecisionParams');
+      const deleted = await s.deleteBatch('authorizationDecisionParams');
       expect(deleted).toEqual({
         authorizationDecisionParams: {
           ticket: 'test-ticket',
@@ -180,8 +219,7 @@ describe('InMemorySession', () => {
         },
       });
 
-      // 削除後の確認
-      const afterDelete = await session.get('authorizationDecisionParams');
+      const afterDelete = await s.get('authorizationDecisionParams');
       expect(afterDelete).toBeUndefined();
     });
   });

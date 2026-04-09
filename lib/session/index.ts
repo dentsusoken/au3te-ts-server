@@ -16,6 +16,12 @@
  */
 
 export * from './Session';
-export * from './InMemorySession';
+export * from './sessionId';
+export * from './InMemorySessionStore';
+export { KeyedSession } from './KeyedSession';
+/**
+ * @deprecated Renamed to {@link KeyedSession}. Will be removed in a future major version.
+ */
+export { KeyedSession as InMemorySession } from './KeyedSession';
 export * from './types';
 export * from './sessionSchemas';

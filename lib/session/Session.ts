@@ -25,6 +25,12 @@ import { ParsedSessionData, SessionSchemas } from './types';
  */
 export interface Session<T extends SessionSchemas> {
   /**
+   * External session key (cookie value, DynamoDB partition key, etc.).
+   * In-memory-only testing helpers that are not keyed by ID may use an empty string.
+   */
+  readonly sessionId: string;
+
+  /**
    * Retrieves the value associated with the specified key.
    *
    * @template K - The key type, which must be a key of T.

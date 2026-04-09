@@ -27,7 +27,8 @@ import { authorizationPageModelSchema } from '@vecrea/au3te-ts-common/handler.au
 
 /**
  * Default session fields used by au3te-ts-server handlers.
- * To add app-specific fields, spread this object and pass the result to {@link InMemorySession}.
+ * To add app-specific fields, spread this object and pass the result to {@link KeyedSession}.
+ * Cookie-backed flows should use {@link KeyedSession} with a shared {@link InMemorySessionStore} and a stable {@link KeyedSession#sessionId}.
  *
  * @example
  * const sessionSchemas = { ...defaultSessionSchemas, myFlag: z.boolean() } satisfies SessionSchemas;

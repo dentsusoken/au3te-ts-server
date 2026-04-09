@@ -64,7 +64,7 @@ Create HandlerConfiguration for each endpoint:
 import { ApiClientImpl } from '@vecrea/au3te-ts-server/api';
 import { AuthleteConfiguration } from '@vecrea/au3te-ts-common/conf';
 import { sessionSchemas } from '@vecrea/au3te-ts-server/session';
-import { InMemorySession } from '@vecrea/au3te-ts-server/session';
+import { KeyedSession } from '@vecrea/au3te-ts-server/session';
 import { ServerHandlerConfigurationImpl } from '@vecrea/au3te-ts-server/handler/core';
 import { ExtractorConfigurationImpl } from '@vecrea/au3te-ts-server/extractor';
 import { TokenHandlerConfigurationImpl } from '@vecrea/au3te-ts-server/handler/token';
@@ -87,7 +87,7 @@ const configuration: AuthleteConfiguration = {
 
 // Base configurations
 const apiClient = new ApiClientImpl(configuration);
-const session = new InMemorySession(sessionSchemas);
+const session = new KeyedSession(sessionSchemas);
 const serverHandlerConfiguration = new ServerHandlerConfigurationImpl(
   apiClient,
   session
@@ -491,10 +491,13 @@ Server configuration used by all endpoints:
 ```typescript
 import { ServerHandlerConfigurationImpl } from '@vecrea/au3te-ts-server/handler/core';
 import { ApiClientImpl } from '@vecrea/au3te-ts-server/api';
-import { InMemorySession } from '@vecrea/au3te-ts-server/session';
+import {
+  KeyedSession,
+  defaultSessionSchemas,
+} from '@vecrea/au3te-ts-server/session';
 
 const apiClient = new ApiClientImpl(authleteConfig);
-const session = new InMemorySession();
+const session = new KeyedSession(defaultSessionSchemas);
 
 const serverConfig = new ServerHandlerConfigurationImpl(apiClient, session);
 ```

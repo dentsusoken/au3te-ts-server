@@ -18,7 +18,7 @@
 import { ApiClientImpl } from '../api/ApiClientImpl';
 import { AuthleteConfiguration } from '@vecrea/au3te-ts-common/conf';
 import { defaultSessionSchemas } from '../session/sessionSchemas';
-import { InMemorySession } from '../session/InMemorySession';
+import { KeyedSession } from '../session/KeyedSession';
 import { ServerHandlerConfigurationImpl } from '../handler/core/ServerHandlerConfigurationImpl';
 import { ExtractorConfigurationImpl } from '../extractor/ExtractorConfigurationImpl';
 import { ParHandlerConfigurationImpl } from '../handler/par/ParHandlerConfigurationImpl';
@@ -56,7 +56,7 @@ export const configuration: AuthleteConfiguration = {
 };
 
 export const apiClient = new ApiClientImpl(configuration);
-export const session = new InMemorySession(defaultSessionSchemas);
+export const session = new KeyedSession(defaultSessionSchemas);
 export const serverHandlerConfiguration = new ServerHandlerConfigurationImpl(
   apiClient,
   session
