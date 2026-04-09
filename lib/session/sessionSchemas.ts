@@ -22,13 +22,14 @@ import {
 } from '@vecrea/au3te-ts-common/schemas.common';
 import { authorizationDecisionParamsSchema } from '@vecrea/au3te-ts-common/schemas.authorization-decision';
 import { oidcCallbackParamsSchema } from '@vecrea/au3te-ts-common/schemas.federation';
+import type { SessionSnapshotStore } from './SessionSnapshotStore';
 import { SessionSchemas } from './types';
 import { authorizationPageModelSchema } from '@vecrea/au3te-ts-common/handler.authorization-page';
 
 /**
  * Default session fields used by au3te-ts-server handlers.
  * To add app-specific fields, spread this object and pass the result to {@link KeyedSession}.
- * Cookie-backed flows should use {@link KeyedSession} with a shared {@link InMemorySessionStore} and a stable {@link KeyedSession#sessionId}.
+ * Cookie-backed flows should use {@link KeyedSession} with a shared {@link SessionSnapshotStore} and a stable {@link KeyedSession#sessionId}.
  *
  * @example
  * const sessionSchemas = { ...defaultSessionSchemas, myFlag: z.boolean() } satisfies SessionSchemas;

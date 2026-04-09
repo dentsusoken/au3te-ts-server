@@ -17,6 +17,7 @@
 import { SessionSchemas, StoredSessionData } from './types';
 import type { CreateSessionId } from './sessionId';
 import { defaultCreateSessionId } from './sessionId';
+import type { SessionSnapshotStore } from './SessionSnapshotStore';
 
 export type InMemorySessionStoreOptions = {
   /** Overrides {@link defaultCreateSessionId} when issuing new session keys. */
@@ -27,7 +28,7 @@ export type InMemorySessionStoreOptions = {
  * Process-wide in-memory backing store for {@link KeyedSession} when keyed by {@link KeyedSession#sessionId}.
  * Suitable for local development; production would swap in DynamoDB / Redis with the same session id pattern.
  */
-export class InMemorySessionStore {
+export class InMemorySessionStore implements SessionSnapshotStore {
   private readonly buckets = new Map<string, StoredSessionData<SessionSchemas>>();
   readonly #createSessionId: CreateSessionId;
 
@@ -41,13 +42,18 @@ export class InMemorySessionStore {
   }
 
   /** @internal */
-  read(sessionId: string): StoredSessionData<SessionSchemas> | undefined {
+  async read(
+    sessionId: string
+  ): Promise<StoredSessionData<SessionSchemas> | undefined> {
     const row = this.buckets.get(sessionId);
     return row ? { ...row } : undefined;
   }
 
   /** @internal */
-  write(sessionId: string, data: StoredSessionData<SessionSchemas>): void {
+  async write(
+    sessionId: string,
+    data: StoredSessionData<SessionSchemas>
+  ): Promise<void> {
     const keys = Object.keys(data);
     if (keys.length === 0) {
       this.buckets.delete(sessionId);

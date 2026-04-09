@@ -17,6 +17,7 @@
 
 export * from './Session';
 export * from './sessionId';
+export * from './SessionSnapshotStore';
 export * from './InMemorySessionStore';
 export { KeyedSession } from './KeyedSession';
 /**
