@@ -27,6 +27,121 @@ export type ResponseToDecisionParams = (
   response: AuthorizationResponse
 ) => AuthorizationDecisionParams;
 
+/** OIDID Connect Core — scope values that request userinfo claims (§5.4). */
+const SCOPE_TO_CLAIM_NAMES: Record<string, readonly string[]> = {
+  profile: [
+    'name',
+    'family_name',
+    'given_name',
+    'middle_name',
+    'nickname',
+    'preferred_username',
+    'profile',
+    'picture',
+    'website',
+    'gender',
+    'birthdate',
+    'zoneinfo',
+    'locale',
+    'updated_at',
+  ],
+  email: ['email', 'email_verified'],
+  phone: ['phone_number', 'phone_number_verified'],
+  address: ['address'],
+};
+
+/**
+ * Claim names listed under the `id_token` key of the OIDC `claims` request parameter.
+ */
+export function extractClaimNamesFromIdTokenClaimsJson(
+  idTokenClaims: string | null | undefined
+): string[] | undefined {
+  if (idTokenClaims == null || idTokenClaims.trim() === '') {
+    return undefined;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(idTokenClaims);
+  } catch {
+    return undefined;
+  }
+  if (
+    parsed === null ||
+    typeof parsed !== 'object' ||
+    Array.isArray(parsed)
+  ) {
+    return undefined;
+  }
+  const idToken = (parsed as Record<string, unknown>)['id_token'];
+  if (
+    idToken === null ||
+    typeof idToken !== 'object' ||
+    Array.isArray(idToken)
+  ) {
+    return undefined;
+  }
+  const names = Object.keys(idToken as Record<string, unknown>).filter(
+    (k) => k.length > 0
+  );
+  return names.length > 0 ? names : undefined;
+}
+
+function claimNamesFromAuthleteScopes(
+  scopes: AuthorizationResponse['scopes']
+): string[] | undefined {
+  if (!scopes?.length) {
+    return undefined;
+  }
+  const out = new Set<string>();
+  let requestedOpenId = false;
+  for (const entry of scopes) {
+    if (entry == null || typeof entry !== 'object') {
+      continue;
+    }
+    const scopeName = 'name' in entry ? entry.name : undefined;
+    if (typeof scopeName !== 'string' || scopeName === '') {
+      continue;
+    }
+    if (scopeName === 'openid') {
+      requestedOpenId = true;
+    }
+    const mapped = SCOPE_TO_CLAIM_NAMES[scopeName];
+    if (mapped) {
+      for (const c of mapped) {
+        out.add(c);
+      }
+    }
+  }
+  if (requestedOpenId) {
+    out.add('sub');
+  }
+  return out.size > 0 ? [...out] : undefined;
+}
+
+/**
+ * Authlete sometimes omits `claims` / `idTokenClaims` on INTERACTION while still returning scopes.
+ * Mirror OIDC scope→claims and the `claims` JSON parameter so /auth/authorization/issue receives
+ * a non-empty `claims` payload when the client only used scopes.
+ */
+export function resolveClaimNamesForDecision(
+  response: AuthorizationResponse
+): string[] | undefined {
+  if (response.claims != null) {
+    if (response.claims.length > 0) {
+      return response.claims;
+    }
+    // Authlete sent an explicit empty array — preserve prior addTxn-only behaviour.
+    return [];
+  }
+  const fromParam = extractClaimNamesFromIdTokenClaimsJson(
+    response.idTokenClaims
+  );
+  if (fromParam != null && fromParam.length > 0) {
+    return fromParam;
+  }
+  return claimNamesFromAuthleteScopes(response.scopes);
+}
+
 /**
  * Adds 'txn' to the claim names array if claims are present
  * @param {string[] | undefined} claimNames - The original claim names array
@@ -89,7 +204,7 @@ export const defaultResponseToDecisionParams: ResponseToDecisionParams = (
   response
 ) => ({
   ticket: response.ticket!,
-  claimNames: addTxnToClaimNames(response.claims),
+  claimNames: addTxnToClaimNames(resolveClaimNamesForDecision(response)),
   claimLocales: normalizeClaimLocales(response.claimsLocales),
   idTokenClaims: response.idTokenClaims,
   requestedClaimsForTx: response.requestedClaimsForTx,

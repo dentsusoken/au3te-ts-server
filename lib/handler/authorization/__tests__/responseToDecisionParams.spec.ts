@@ -82,6 +82,36 @@ describe('defaultResponseToDecisionParams', () => {
     expect(result.claimNames).toEqual(['txn']);
   });
 
+  it('should derive claimNames from scopes when claims and idTokenClaims are absent', () => {
+    const mockResponse: AuthorizationResponse = {
+      action: 'INTERACTION',
+      ticket: 'test-ticket',
+      scopes: [{ name: 'openid' }, { name: 'email' }],
+    };
+
+    const result = defaultResponseToDecisionParams(mockResponse);
+
+    expect(result.claimNames).toEqual([
+      'email',
+      'email_verified',
+      'sub',
+      'txn',
+    ]);
+  });
+
+  it('should prefer idTokenClaims JSON over scope-derived names when claims is absent', () => {
+    const mockResponse: AuthorizationResponse = {
+      action: 'INTERACTION',
+      ticket: 'test-ticket',
+      idTokenClaims: JSON.stringify({ id_token: { given_name: null, email: null } }),
+      scopes: [{ name: 'openid' }, { name: 'profile' }],
+    };
+
+    const result = defaultResponseToDecisionParams(mockResponse);
+
+    expect(result.claimNames).toEqual(['given_name', 'email', 'txn']);
+  });
+
   describe('claimLocales normalization', () => {
     it('should normalize claim locales by removing duplicates case-insensitively', () => {
       const mockResponse: AuthorizationResponse = {

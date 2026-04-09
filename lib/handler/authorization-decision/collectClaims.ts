@@ -92,6 +92,10 @@ export const getClaim = (
     return undefined;
   }
 
+  if (name === 'sub') {
+    return user.subject;
+  }
+
   const camelCaseName = name.replace(/_([a-z])/g, (_, letter) =>
     letter.toUpperCase()
   );
